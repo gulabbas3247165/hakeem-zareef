@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#059669">
+<title>Hakeem Zareef CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --g:#059669;--g2:#10b981;--gp:#ecfdf5;--gb:#a7f3d0;
+  --gold:#d97706;--gop:#fffbeb;--gob:#fcd34d;
+  --red:#e11d48;--rp:#fff1f2;--rb:#fecdd3;
+  --blue:#2563eb;--bp2:#eff6ff;--bb:#bfdbfe;
+  --org:#ea580c;--opp:#fff7ed;--ob:#fed7aa;
+  --purp:#7c3aed;--pp:#f5f3ff;--pb:#ddd6fe;
+  --bg:#0f172a;--card:#1e293b;--bdr:#334155;
+  --tx:#f8fafc;--tx2:#e2e8f0;--mt:#94a3b8;--lt:#0f172a;
+  --sh:0 4px 20px rgba(0,0,0,.4);--r:10px;--r2:14px;--sb:252px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;-webkit-font-smoothing:antialiased;}
+/* LOGIN */
+#ls{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at top,rgba(5,150,105,.15),transparent 60%),#0f172a;}
+.lcard{background:#1e293b;border:1px solid #334155;border-radius:24px;padding:40px 34px;width:420px;max-width:100%;box-shadow:0 40px 100px rgba(0,0,0,.6);}
+.lico{width:68px;height:68px;background:linear-gradient(135deg,#065f46,#059669);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 14px;box-shadow:0 10px 30px rgba(5,150,105,.4);}
+.lbrand{text-align:center;margin-bottom:28px;}
+.lbrand h1{font-size:19px;font-weight:800;color:#f1f5f9;}
+.lbrand p{font-size:12px;color:#64748b;margin-top:3px;}
+.ltabs{display:flex;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:4px;gap:4px;margin-bottom:24px;}
+.ltab{flex:1;padding:10px 8px;text-align:center;font-size:13px;font-weight:600;background:transparent;color:#64748b;border:none;border-radius:9px;font-family:'Inter',sans-serif;cursor:pointer;-webkit-user-select:none;user-select:none;transition:all .2s;}
+.ltab.on{background:linear-gradient(135deg,#065f46,#059669);color:#fff;box-shadow:0 4px 12px rgba(6,95,70,.4);}
+.lf{margin-bottom:16px;}
+.lf label{display:block;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.lf input,.lf select{width:100%;padding:12px 14px;border:1px solid #334155;border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;background:#0f172a;color:#f1f5f9;outline:none;transition:border-color .2s;-webkit-appearance:none;}
+.lf input:focus,.lf select:focus{border-color:#059669;}
+.lf input::placeholder{color:#475569;}
+.lf select option{background:#1e293b;}
+.lbtn{width:100%;padding:14px;background:linear-gradient(135deg,#065f46,#059669);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:4px;box-shadow:0 6px 18px rgba(6,95,70,.4);}
+.lbtn:active{opacity:.9;transform:scale(.98);}
+.lerr{color:#fb7185;font-size:12px;text-align:center;margin-top:10px;display:none;background:rgba(225,29,72,.12);padding:8px;border-radius:8px;}
+/* APP */
+#app{display:none;}
+.topbar{height:56px;background:#1e293b;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:200;box-shadow:0 2px 20px rgba(0,0,0,.3);}
+.tl{display:flex;align-items:center;gap:9px;}
+.tlogo{width:30px;height:30px;background:linear-gradient(135deg,#065f46,#059669);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.tname{font-size:13px;font-weight:800;color:#f8fafc;letter-spacing:-.2px;}
+.tname span{color:#64748b;font-weight:500;}
+.tpill{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.4px;}
+.tpill.adm{background:linear-gradient(135deg,#065f46,#059669);color:#fff;}
+.tpill.opr{background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.3);}
+.tr{display:flex;align-items:center;gap:7px;}
+.tuser{font-size:12px;font-weight:600;color:#e2e8f0;}
+.tdate{font-size:11px;color:#64748b;padding:3px 8px;background:#0f172a;border:1px solid #334155;border-radius:6px;white-space:nowrap;}
+.bso{background:transparent;color:#64748b;border:1px solid #334155;padding:6px 12px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:600;font-family:'Inter',sans-serif;}
+#ham{display:none;background:none;border:none;cursor:pointer;padding:6px;flex-direction:column;gap:4px;}
+#ham span{display:block;width:16px;height:2px;background:#e2e8f0;border-radius:2px;}
+.layout{display:flex;min-height:calc(100vh - 56px);}
+/* SIDEBAR */
+.sidebar{width:var(--sb);background:#0a0f1a;border-right:1px solid #1e293b;padding:10px 0 24px;flex-shrink:0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;}
+.ng{padding:14px 14px 4px;font-size:9px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:1.4px;}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 12px;margin:1px 8px;border-radius:8px;font-size:13px;font-weight:500;color:#94a3b8;cursor:pointer;-webkit-user-select:none;user-select:none;transition:all .15s;}
+.ni:hover{background:rgba(16,185,129,.1);color:#10b981;}
+.ni.on{background:rgba(16,185,129,.15);color:#10b981;font-weight:700;border-left:2px solid #10b981;padding-left:10px;}
+.ni-ic{width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.nbdg{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:8px;}
+/* MAIN */
+.main{flex:1;padding:20px;overflow-y:auto;min-width:0;background:#0f172a;}
+.page{display:none;animation:fi .18s ease;}
+.page.on{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:10px;flex-wrap:wrap;}
+.ph h2{font-size:20px;font-weight:800;letter-spacing:-.4px;color:#f8fafc;}
+.ph p{font-size:12px;color:#64748b;margin-top:2px;}
+.pha{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+/* STATS */
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.sc{background:#1e293b;border-radius:var(--r2);padding:15px 16px;border:1px solid #334155;position:relative;overflow:hidden;}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r2) var(--r2) 0 0;}
+.sc.g::before{background:linear-gradient(90deg,#065f46,#059669);}
+.sc.a::before{background:linear-gradient(90deg,#d97706,#f59e0b);}
+.sc.b::before{background:linear-gradient(90deg,#1e3a8a,#3b82f6);}
+.sc.r::before{background:linear-gradient(90deg,#9f1239,#e11d48);}
+.sc.o::before{background:linear-gradient(90deg,#9a3412,#ea580c);}
+.sc.v::before{background:linear-gradient(90deg,#5b21b6,#7c3aed);}
+.sl{font-size:10px;font-weight:700;color:#64748b;letter-spacing:.3px;text-transform:uppercase;}
+.sv{font-size:22px;font-weight:900;margin:5px 0 2px;letter-spacing:-.4px;}
+.sv.g{color:#10b981;}.sv.a{color:#f59e0b;}.sv.b{color:#60a5fa;}.sv.r{color:#fb7185;}.sv.o{color:#fb923c;}.sv.v{color:#a78bfa;}
+.ss{font-size:11px;color:#64748b;}
+/* CARD */
+.card{background:#1e293b;border-radius:var(--r2);border:1px solid #334155;margin-bottom:14px;box-shadow:var(--sh);}
+.ch2{padding:12px 16px;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;}
+.ct{font-size:13px;font-weight:700;color:#f8fafc;}
+.cbody{padding:14px;}
+/* TABLE */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table{width:100%;border-collapse:collapse;min-width:480px;}
+th{text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;background:#0a0f1a;border-bottom:1px solid #334155;white-space:nowrap;}
+td{padding:10px 12px;font-size:13px;border-bottom:1px solid #1e293b;vertical-align:middle;color:#cbd5e1;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+.late-row td{background:rgba(225,29,72,.05)!important;}
+/* BADGES */
+.bdg{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:600;white-space:nowrap;border:1px solid;}
+.bdg::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.bp{background:rgba(217,119,6,.12);color:#fbbf24;border-color:rgba(251,191,36,.25);}.bp::before{background:#fbbf24;}
+.bc{background:rgba(37,99,235,.12);color:#60a5fa;border-color:rgba(96,165,250,.25);}.bc::before{background:#60a5fa;}
+.bd{background:rgba(16,185,129,.12);color:#34d399;border-color:rgba(52,211,153,.25);}.bd::before{background:#34d399;}
+.bx{background:rgba(225,29,72,.12);color:#fb7185;border-color:rgba(251,113,133,.25);}.bx::before{background:#fb7185;}
+.brb{background:rgba(234,88,12,.12);color:#fb923c;border-color:rgba(251,146,60,.25);}.brb::before{background:#fb923c;}
+.bv{background:rgba(124,58,237,.12);color:#a78bfa;border-color:rgba(167,139,250,.25);}.bv::before{background:#a78bfa;}
+.late-bdg{background:rgba(225,29,72,.15);color:#fb7185;border:1px solid rgba(251,113,133,.25);display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;-webkit-user-select:none;user-select:none;min-height:36px;}
+.btn:active{transform:scale(.95);opacity:.9;}
+.bp2{background:linear-gradient(135deg,#065f46,#059669);color:#fff;}
+.bamb{background:linear-gradient(135deg,#b45309,#d97706);color:#fff;}
+.brd{background:linear-gradient(135deg,#9f1239,#e11d48);color:#fff;}
+.bo2{background:linear-gradient(135deg,#9a3412,#ea580c);color:#fff;}
+.bgold{background:linear-gradient(135deg,#78350f,#d97706);color:#fff;}
+.bblue{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;}
+.bout{background:transparent;color:#10b981;border:1.5px solid #10b981;}
+.bgh{background:#0a0f1a;color:#64748b;border:1px solid #334155;}
+.bsm{padding:6px 12px;font-size:12px;border-radius:7px;min-height:32px;}
+.bxs{padding:5px 11px;font-size:12px;border-radius:7px;min-height:32px;min-width:42px;}
+/* FILTER */
+.fb{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;align-items:center;}
+.sb{display:flex;align-items:center;gap:5px;border:1px solid #334155;border-radius:8px;padding:7px 11px;background:#1e293b;min-width:160px;flex:1;max-width:260px;}
+.sb input{border:none;outline:none;font-size:13px;font-family:'Inter',sans-serif;background:transparent;color:#e2e8f0;width:100%;}
+.fsl{padding:7px 11px;border:1px solid #334155;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;background:#1e293b;color:#e2e8f0;outline:none;cursor:pointer;-webkit-appearance:none;}
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:flex-end;justify-content:center;}
+.ov.on{display:flex;}
+.modal{background:#1e293b;border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.5);}
+.mh{padding:16px 20px 13px;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#1e293b;z-index:1;}
+.mh h3{font-size:15px;font-weight:800;color:#f8fafc;}
+.mcl{width:30px;height:30px;border-radius:7px;border:1px solid #334155;background:#0a0f1a;cursor:pointer;font-size:16px;color:#64748b;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none;}
+.mb{padding:18px 20px;background:#1e293b;}
+.mft{padding:12px 20px;border-top:1px solid #334155;display:flex;gap:7px;justify-content:flex-end;position:sticky;bottom:0;background:#1e293b;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.f{display:flex;flex-direction:column;gap:4px;}
+.f.full{grid-column:1/-1;}
+.f label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;}
+.f input,.f select,.f textarea{padding:10px 12px;border:1.5px solid #334155;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;background:#0a0f1a;color:#e2e8f0;outline:none;transition:border-color .2s;}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:#059669;}
+.f textarea{resize:vertical;min-height:66px;}
+.f input[readonly]{background:#060a12;color:#475569;}
+.f select option{background:#1e293b;}
+.slbl{font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid #334155;padding-bottom:7px;margin:3px 0 2px;}
+.divr{height:1px;background:#334155;margin:13px 0;}
+/* ORDER TYPE */
+.otype{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
+.otb{padding:13px 11px;border-radius:11px;border:2px solid #334155;background:#0a0f1a;cursor:pointer;text-align:center;transition:all .18s;-webkit-user-select:none;user-select:none;}
+.otb.cv{border-color:#059669;background:rgba(5,150,105,.1);}
+.otb.rg{border-color:#7c3aed;background:rgba(124,58,237,.1);}
+.otb-ic{font-size:20px;margin-bottom:4px;}
+.otb-t{font-size:13px;font-weight:700;color:#e2e8f0;}
+.otb-s{font-size:11px;color:#64748b;margin-top:2px;}
+/* COMMISSION BOX */
+.cbox{background:rgba(16,185,129,.08);border:1.5px solid rgba(52,211,153,.25);border-radius:9px;padding:13px 14px;}
+.cbox.none{background:#060a12;border-color:#334155;}
+.camt{font-size:24px;font-weight:900;color:#34d399;letter-spacing:-.4px;}
+.camt.none{color:#64748b;font-size:13px;}
+.cinfo{font-size:12px;color:#10b981;font-weight:600;margin-top:2px;}
+.cslab{font-size:11px;color:#64748b;margin-top:1px;}
+/* PHOTO */
+.phup{border:2px dashed #334155;border-radius:10px;padding:16px;text-align:center;background:#0a0f1a;}
+.phup input[type=file]{display:block;width:100%;font-size:13px;color:#94a3b8;font-family:'Inter',sans-serif;margin-top:7px;cursor:pointer;}
+.phprev{max-width:100%;max-height:150px;border-radius:7px;object-fit:cover;margin-top:9px;display:none;border:1px solid #334155;}
+/* PERF */
+.pfr{background:#1e293b;border-radius:var(--r);border:1px solid #334155;padding:13px 15px;display:flex;align-items:center;gap:11px;margin-bottom:8px;}
+.pfav{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;color:#fff;}
+.pfinf{flex:1;min-width:0;}
+.pfnm{font-size:13px;font-weight:700;color:#e2e8f0;}
+.pfmt{font-size:11px;color:#64748b;margin-top:2px;}
+.pfbg{background:#0a0f1a;border-radius:4px;height:4px;margin-top:7px;overflow:hidden;}
+.pfbr{height:100%;border-radius:4px;}
+.pfsc{font-size:17px;font-weight:900;min-width:44px;text-align:right;}
+/* CHARTS */
+.cr{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:16px;}
+.cb3{background:#1e293b;border-radius:var(--r2);padding:16px;border:1px solid #334155;}
+.cb3 h4{font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.7px;margin-bottom:13px;}
+/* WELCOME */
+.wb{background:linear-gradient(135deg,#065f46,#059669);color:#fff;border-radius:var(--r2);padding:18px 22px;margin-bottom:18px;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.wb::after{content:'🌿';position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:60px;opacity:.1;}
+.wbic{width:44px;height:44px;background:rgba(255,255,255,.18);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.wb h2{font-size:17px;font-weight:800;}
+.wb p{font-size:12px;opacity:.72;margin-top:2px;}
+/* COMM BANNER */
+.cban{background:linear-gradient(135deg,#065f46,#059669);border-radius:var(--r2);padding:20px 22px;color:#fff;margin-bottom:14px;position:relative;overflow:hidden;}
+.cban::after{content:'💰';position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:54px;opacity:.11;}
+.cban h3{font-size:10px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.7px;}
+.cban .cv{font-size:33px;font-weight:900;letter-spacing:-1.5px;margin:6px 0 3px;}
+/* SLAB */
+.slab-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.slab{background:#0a0f1a;border:1px solid #334155;border-radius:8px;padding:10px;text-align:center;}
+.slab-r{font-size:11px;color:#64748b;}
+.slab-c{font-size:16px;font-weight:900;color:#10b981;margin-top:2px;}
+/* TOAST */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(70px);background:#059669;color:#fff;padding:11px 16px;border-radius:11px;font-size:13px;font-weight:600;box-shadow:0 8px 28px rgba(5,150,105,.4);opacity:0;transition:all .28s;z-index:9999;max-width:90vw;display:flex;align-items:center;gap:7px;white-space:nowrap;}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.err{background:#e11d48;box-shadow:0 8px 28px rgba(225,29,72,.4);}
+.empty{text-align:center;padding:32px 16px;color:#64748b;}
+.empty-ic{font-size:32px;margin-bottom:7px;}
+#sov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:149;}
+/* SYNC STATUS */
+.sync-pill{display:flex;align-items:center;gap:5px;background:#0a0f1a;border:1px solid #334155;border-radius:20px;padding:4px 10px;font-size:10px;font-weight:600;color:#64748b;}
+.sdot{width:6px;height:6px;border-radius:50%;background:#10b981;flex-shrink:0;}
+.sdot.spin{background:#f59e0b;animation:pulse .8s ease infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* RESPONSIVE */
+@media(max-width:768px){
+  :root{--sb:270px;}
+  .main{padding:11px;}
+  .sg{grid-template-columns:1fr 1fr;gap:9px;}
+  .sv{font-size:19px;}
+  .cr{grid-template-columns:1fr;}
+  .fg{grid-template-columns:1fr;}
+  .ph{flex-direction:column;}
+  .pha{justify-content:flex-start;}
+  .sidebar{position:fixed;left:calc(-1 * var(--sb));top:56px;height:calc(100vh - 56px);z-index:150;transition:left .25s;}
+  .sidebar.on{left:0;box-shadow:8px 0 30px rgba(0,0,0,.5);}
+  #sov.on{display:block;}
+  #ham{display:flex;}
+  .topbar{padding:0 12px;}
+  .tuser,.tdate{display:none;}
+  .toast{bottom:14px;left:10px;right:10px;max-width:none;transform:translateY(70px);}
+  .toast.on{transform:translateY(0);}
+  .slab-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:380px){.sg{grid-template-columns:1fr 1fr;}.lcard{padding:28px 16px;}.sv{font-size:17px;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="ls" style="display:flex">
+<div class="lcard">
+  <div class="lbrand">
+    <div class="lico">🌿</div>
+    <h1>Hakeem Zareef Dawakhana</h1>
+    <p>Team Management & Commission Portal</p>
+  </div>
+  <div class="ltabs">
+    <button class="ltab on" id="lt-a">👑 Admin</button>
+    <button class="ltab" id="lt-o">👤 Team Member</button>
+  </div>
+  <div id="adf">
+    <div class="lf"><label>Admin Password</label>
+      <input type="password" id="apw" placeholder="Enter admin password…">
+    </div>
+  </div>
+  <div id="opf" style="display:none">
+    <div class="lf"><label>Select Your Name</label>
+      <select id="opsel"><option value="">— Select Member —</option></select>
+    </div>
+    <div class="lf"><label>Password</label>
+      <input type="password" id="oppw" placeholder="Enter password…">
+    </div>
+  </div>
+  <button class="lbtn" id="lbtn">Sign In →</button>
+  <div class="lerr" id="lerr">Incorrect credentials. Try again.</div>
+</div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+<div class="topbar">
+  <div class="tl">
+    <button id="ham"><span></span><span></span><span></span></button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="tlogo">🌿</div>
+      <div class="tname">Hakeem Zareef <span>Dawakhana</span></div>
+    </div>
+    <span class="tpill" id="tpill">Admin</span>
+  </div>
+  <div class="tr">
+    <span class="tuser" id="tuser"></span>
+    <span class="tdate" id="tdate"></span>
+    <div class="sync-pill"><div class="sdot" id="sdot"></div><span id="stxt">Saved</span></div>
+    <button class="btn bgh bsm" id="sync-btn" style="font-size:11px;padding:5px 10px">🔄 Sync</button>
+    <button class="bso" id="bso">Sign Out</button>
+  </div>
+</div>
+<div id="sov"></div>
+<div class="layout">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main" id="main"></div>
+</div>
+</div>
+
+<!-- ORDER MODAL -->
+<div class="ov" id="m-order">
+<div class="modal">
+  <div class="mh"><h3 id="mot">New Order</h3><button class="mcl" id="cls-order">✕</button></div>
+  <div class="mb">
+    <div class="slbl" style="margin-bottom:9px">Order Type</div>
+    <div class="otype">
+      <div class="otb cv" id="ot-v"><div class="otb-ic">📦</div><div class="otb-t">VPL</div><div class="otb-s">MO required for commission</div></div>
+      <div class="otb" id="ot-r"><div class="otb-ic">📋</div><div class="otb-t">Registry / Advance</div><div class="otb-s">Instant commission</div></div>
+    </div>
+    <div id="reg-note" style="display:none;background:rgba(124,58,237,.1);border:1px solid rgba(167,139,250,.3);border-radius:9px;padding:11px 14px;margin-bottom:13px;font-size:13px;color:#a78bfa"><strong style="display:block;margin-bottom:2px">📋 Registry Order</strong>Advance paid. Commission instant. No MO needed.</div>
+    <div class="slbl" style="margin-bottom:9px">Patient Information</div>
+    <div class="fg">
+      <div class="f"><label>Patient Name *</label><input id="fn" placeholder="Full name" autocomplete="off"></div>
+      <div class="f"><label>Phone *</label><input id="fph" placeholder="03XX-XXXXXXX" type="tel" autocomplete="off"></div>
+      <div class="f"><label>City</label><input id="fct" placeholder="e.g. Lahore" autocomplete="off"></div>
+      <div class="f"><label>Disease / Condition</label><input id="fds" placeholder="e.g. Kidney Stone" autocomplete="off"></div>
+      <div class="f full"><label>Full Address</label><input id="fadr" placeholder="Street, Area, City" autocomplete="off"></div>
+    </div>
+    <div class="divr"></div>
+    <div class="slbl" style="margin-bottom:9px">Payment</div>
+    <div class="fg">
+      <div class="f"><label>Total Price (Rs)</label><input type="number" id="fpr" placeholder="0" inputmode="numeric"></div>
+      <div class="f"><label>Advance Received (Rs)</label><input type="number" id="fad" placeholder="0" inputmode="numeric"></div>
+      <div class="f"><label>Balance Due (Rs)</label><input type="number" id="fbk" readonly></div>
+      <div class="f"><label>Order Status</label>
+        <select id="fst">
+          <option value="pending">Pending</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="f full" id="comm-display" style="display:none">
+        <label>Commission</label>
+        <div class="cbox" id="cbox"><div class="camt" id="camt">Rs 0</div><div class="cinfo" id="cinfo"></div><div class="cslab" id="cslab"></div></div>
+      </div>
+      <div class="f full"><label>Notes</label><textarea id="fnt" placeholder="Any notes…"></textarea></div>
+    </div>
+    <div class="divr"></div>
+    <div class="slbl" style="margin-bottom:9px">Parcel Photo (Optional)</div>
+    <div class="phup">
+      <div style="font-size:24px">📸</div>
+      <div style="font-size:12px;color:#64748b;margin-top:3px">Photo of parcel before sending</div>
+      <input type="file" id="dispatch-file" accept="image/*" capture="environment">
+      <img id="dispatch-img" class="phprev">
+    </div>
+    <div id="pay-sec" style="display:none">
+      <div class="divr"></div>
+      <div class="slbl" style="margin-bottom:9px">Payment Screenshot (Registry)</div>
+      <div class="phup">
+        <div style="font-size:24px">💳</div>
+        <div style="font-size:12px;color:#64748b;margin-top:3px">Upload payment transfer screenshot</div>
+        <input type="file" id="pay-file" accept="image/*" capture="environment">
+        <img id="pay-img" class="phprev">
+      </div>
+    </div>
+  </div>
+  <div class="mft">
+    <button class="btn bgh bsm" id="cancel-order">Cancel</button>
+    <button class="btn bp2 bsm" id="save-order-btn">Save Order</button>
+  </div>
+</div>
+</div>
+
+<!-- MO MODAL -->
+<div class="ov" id="m-mo">
+<div class="modal">
+  <div class="mh"><h3>💵 Submit Money Order</h3><button class="mcl" id="cls-mo">✕</button></div>
+  <div class="mb">
+    <div style="background:rgba(16,185,129,.08);border:1px solid rgba(52,211,153,.2);border-radius:9px;padding:13px;margin-bottom:13px" id="mo-info"></div>
+    <div class="fg">
+      <div class="f"><label>MO Amount (Rs)</label><input type="number" id="mo-amt" placeholder="0" inputmode="numeric"></div>
+      <div class="f"><label>MO Date</label><input type="date" id="mo-date"></div>
+      <div class="f full"><label>Notes</label><textarea id="mo-notes" placeholder="Notes…" style="min-height:52px"></textarea></div>
+    </div>
+    <div class="divr"></div>
+    <div class="slbl" style="margin-bottom:9px">Money Order Photo (Required)</div>
+    <div class="phup">
+      <div style="font-size:24px">📷</div>
+      <div style="font-size:12px;color:#64748b;margin-top:3px">Clear photo of Money Order form</div>
+      <input type="file" id="mo-file" accept="image/*" capture="environment">
+      <img id="mo-img" class="phprev">
+    </div>
+  </div>
+  <div class="mft">
+    <button class="btn bgh bsm" id="cancel-mo">Cancel</button>
+    <button class="btn bp2 bsm" id="save-mo-btn">📤 Submit for Approval</button>
+  </div>
+</div>
+</div>
+
+<!-- RETURN MODAL -->
+<div class="ov" id="m-ret">
+<div class="modal">
+  <div class="mh"><h3>↩ Process Return</h3><button class="mcl" id="cls-ret">✕</button></div>
+  <div class="mb">
+    <div style="background:rgba(234,88,12,.08);border:1px solid rgba(251,146,60,.25);border-radius:9px;padding:11px 14px;margin-bottom:13px;display:flex;gap:9px">
+      <span style="font-size:17px;flex-shrink:0">⚠️</span>
+      <p style="font-size:13px;color:#fb923c;line-height:1.5"><strong style="font-weight:700;display:block;margin-bottom:1px">Return / Refund</strong>Tracked against performance score.</p>
+    </div>
+    <div style="background:#0a0f1a;border:1px solid #334155;border-radius:9px;padding:12px;margin-bottom:12px" id="ret-info"></div>
+    <div class="fg">
+      <div class="f"><label>Return Reason *</label>
+        <select id="rrs">
+          <option value="">— Select Reason —</option>
+          <option>Patient refused delivery</option>
+          <option>Wrong address / not found</option>
+          <option>Duplicate order</option>
+          <option>Quality complaint</option>
+          <option>Patient changed mind</option>
+          <option>Courier issue</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="f"><label>Return Date</label><input type="date" id="rdt"></div>
+      <div class="f"><label>Refund Amount (Rs)</label><input type="number" id="rrf" placeholder="0" inputmode="numeric"></div>
+      <div class="f"><label>Medicine Returned?</label>
+        <select id="rsk"><option value="yes">Yes — Back to Stock</option><option value="no">No — Damaged</option></select>
+      </div>
+      <div class="f full"><label>Notes</label><textarea id="rnt" placeholder="Describe the issue…"></textarea></div>
+    </div>
+  </div>
+  <div class="mft">
+    <button class="btn bgh bsm" id="cancel-ret">Cancel</button>
+    <button class="btn bo2 bsm" id="save-ret-btn">↩ Process Return</button>
+  </div>
+</div>
+</div>
+
+<!-- TEAM MODAL -->
+<div class="ov" id="m-op">
+<div class="modal">
+  <div class="mh"><h3 id="op-title">Add Team Member</h3><button class="mcl" id="cls-op">✕</button></div>
+  <div class="mb">
+    <div class="fg">
+      <div class="f full"><label>Display Name *</label><input id="onm" placeholder="e.g. Adeel"></div>
+      <div class="f"><label>City</label><input id="ocy" placeholder="Lahore"></div>
+      <div class="f"><label>Password *</label><input type="password" id="opw2" placeholder="Login password"></div>
+      <div class="f full"><label>Avatar Color</label>
+        <select id="ocl">
+          <option value="#065f46">Emerald</option><option value="#1e3a8a">Navy</option>
+          <option value="#5b21b6">Violet</option><option value="#92400e">Amber</option>
+          <option value="#991b1b">Red</option><option value="#0e7490">Cyan</option>
+          <option value="#b45309">Orange</option><option value="#be185d">Pink</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="mft">
+    <button class="btn bgh bsm" id="cancel-op">Cancel</button>
+    <button class="btn bp2 bsm" id="save-op-btn">Save Member</button>
+  </div>
+</div>
+</div>
+
+<!-- APPROVE MODAL -->
+<div class="ov" id="m-appr">
+<div class="modal">
+  <div class="mh"><h3>✅ Review Money Order</h3><button class="mcl" id="cls-appr">✕</button></div>
+  <div class="mb" id="appr-body"></div>
+  <div class="mft">
+    <button class="btn bgh bsm" id="cancel-appr">Close</button>
+    <button class="btn brd bsm" id="reject-mo-btn">❌ Reject</button>
+    <button class="btn bp2 bsm" id="approve-mo-btn">✅ Approve & Pay</button>
+  </div>
+</div>
+</div>
+
+<!-- SYNC MODAL -->
+<div class="ov" id="m-sync">
+<div class="modal">
+  <div class="mh"><h3>🔄 Data Sync</h3><button class="mcl" id="cls-sync">✕</button></div>
+  <div class="mb">
+    <div id="sync-admin-sec" style="display:none">
+      <div style="background:rgba(16,185,129,.08);border:1px solid rgba(52,211,153,.2);border-radius:9px;padding:12px 14px;margin-bottom:13px">
+        <strong style="color:#34d399;display:block;margin-bottom:3px">📤 Share with Operators</strong>
+        <p style="font-size:12px;color:#94a3b8;line-height:1.5">Copy this code aur WhatsApp pe operators ko bhejo. Woh paste karein to unka data update ho jayega.</p>
+      </div>
+      <div class="f full" style="margin-bottom:12px">
+        <label>Sync Code — Copy This</label>
+        <textarea id="sync-out" readonly style="min-height:90px;font-size:10px;font-family:monospace;word-break:break-all;background:#0a0f1a;color:#34d399;border:1px solid #334155;border-radius:8px;padding:9px"></textarea>
+      </div>
+      <button class="btn bp2 bsm" style="width:100%;margin-bottom:14px" id="copy-sync-btn">📋 Copy Code</button>
+      <div class="divr"></div>
+    </div>
+    <div>
+      <div style="background:rgba(37,99,235,.08);border:1px solid rgba(96,165,250,.2);border-radius:9px;padding:12px 14px;margin-bottom:13px">
+        <strong style="color:#60a5fa;display:block;margin-bottom:3px">📥 Receive from Admin</strong>
+        <p style="font-size:12px;color:#94a3b8;line-height:1.5">Admin ne jo code bheja woh yahan paste karo.</p>
+      </div>
+      <div class="f full" style="margin-bottom:12px">
+        <label>Paste Sync Code Here</label>
+        <textarea id="sync-in" placeholder="Code yahan paste karo…" style="min-height:70px;font-size:10px;font-family:monospace;word-break:break-all"></textarea>
+      </div>
+      <button class="btn bblue bsm" style="width:100%" id="apply-sync-btn">✅ Apply Sync</button>
+    </div>
+  </div>
+  <div class="mft"><button class="btn bgh bsm" id="cancel-sync">Close</button></div>
+</div>
+</div>
+
+<div class="toast" id="toast"><span id="tic">✓</span><span id="tmsg"></span></div>
+
+<script>
+/* ══ DATA ══ */
+const APWD='admin786';
+function defaultDB(){
+  return{
+    operators:[
+      {id:1,name:'Adeel',   city:'',password:'adeel786',  color:'#065f46'},
+      {id:2,name:'Afzal',   city:'',password:'afzal786',  color:'#1e3a8a'},
+      {id:3,name:'Ahmad',   city:'',password:'ahmad786',  color:'#5b21b6'},
+      {id:4,name:'Fahad',   city:'',password:'fahad786',  color:'#92400e'},
+      {id:5,name:'Faisal',  city:'',password:'faisal786', color:'#991b1b'},
+      {id:6,name:'Imran',   city:'',password:'imran786',  color:'#0e7490'},
+      {id:7,name:'Rizwan',  city:'',password:'rizwan786', color:'#b45309'},
+      {id:8,name:'Shahzad', city:'',password:'shahzad786',color:'#be185d'},
+      {id:9,name:'Zeeshan', city:'',password:'zeeshan786',color:'#134e4a'},
+    ],
+    orders:[],returns:[],moReqs:[]
+  };
+}
+let db=(()=>{
+  try{
+    const s=localStorage.getItem('hzd_db');
+    if(s){
+      const parsed=JSON.parse(s);
+      // Ensure all required arrays exist
+      parsed.operators=parsed.operators||[];
+      parsed.orders=parsed.orders||[];
+      parsed.returns=parsed.returns||[];
+      parsed.moReqs=parsed.moReqs||[];
+      return parsed;
+    }
+  }catch(e){}
+  return defaultDB();
+})();
+let user=null,eOid=null,eOpid=null,rOid=null,moOid=null,apprId=null,curOT='vpl',charts={};
+
+const FB_URL='https://hzd-crm-default-rtdb.firebaseio.com/hzd.json';
+let saveTimer=null;
+
+function save(){
+  localStorage.setItem('hzd_db',JSON.stringify(db));
+  setSS('spin');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(syncToCloud,800);
+}
+
+async function syncToCloud(){
+  try{
+    let payload=JSON.stringify(db);
+    // Strip photos if too large
+    if(payload.length>9000000){
+      const d2=JSON.parse(payload);
+      d2.orders=d2.orders.map(o=>({...o,dispatchPhoto:null,paymentPhoto:null}));
+      d2.moReqs=d2.moReqs.map(r=>({...r,photo:null}));
+      payload=JSON.stringify(d2);
+    }
+    const res=await fetch(FB_URL,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:payload
+    });
+    if(res.ok){
+      setSS('ok');
+    } else {
+      const err=await res.text();
+      console.error('Firebase error:',err);
+      setSS('err','Sync failed');
+    }
+  }catch(e){
+    console.error('Sync error:',e);
+    setSS('err','No internet');
+  }
+}
+
+async function loadFromCloud(){
+  try{
+    const r=await fetch(FB_URL);
+    const data=await r.json();
+    if(data&&data.operators&&data.operators.length>0){
+      data.orders=data.orders||[];
+      data.returns=data.returns||[];
+      data.moReqs=data.moReqs||[];
+      // ONLY replace local data if cloud has MORE or EQUAL orders
+      // This prevents cloud from wiping freshly added local orders
+      const localCount=db.orders?db.orders.length:0;
+      const cloudCount=data.orders.length;
+      if(cloudCount>=localCount){
+        db=data;
+        localStorage.setItem('hzd_db',JSON.stringify(db));
+        return true;
+      }
+    }
+  }catch(e){}
+  return false;
+}
+function setSS(s){
+  const d=document.getElementById('sdot'),t=document.getElementById('stxt');
+  if(!d||!t)return;
+  if(s==='spin'){d.className='sdot spin';t.textContent='Saving…';}
+  else{d.className='sdot';t.textContent='Saved';}
+}
+
+/* ══ COMMISSION ══ */
+function getComm(p){
+  p=parseFloat(p)||0;
+  if(p>=1000&&p<=2000)return 300;
+  if(p>=2100&&p<=3000)return 350;
+  if(p>=3100&&p<=4000)return 400;
+  if(p>=4100&&p<=5000)return 450;
+  if(p>=5100&&p<=6000)return 500;
+  return 0;
+}
+function commEarned(o){
+  if(o.orderType==='registry')return true;
+  return!!db.moReqs.find(r=>r.orderId===o.id&&r.status==='approved');
+}
+function buildComm(ords){
+  return ords.filter(o=>getComm(o.price)>0).map(o=>({
+    orderId:o.id,opId:o.opId,patName:o.name,price:o.price,
+    comm:getComm(o.price),
+    type:o.orderType==='registry'?'Registry':'VPL',
+    status:commEarned(o)?'paid':'pending',date:o.date
+  }));
+}
+
+/* ══ PHOTO ══ */
+function setupPhoto(fid,iid){
+  const inp=document.getElementById(fid);if(!inp)return;
+  inp.onchange=function(){
+    const f=this.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=e=>{const img=document.getElementById(iid);if(img){img.src=e.target.result;img.style.display='block';}};
+    r.readAsDataURL(f);
+  };
+}
+function getPhoto(fid){
+  return new Promise(res=>{
+    const inp=document.getElementById(fid);
+    if(!inp||!inp.files[0])return res(null);
+    const file=inp.files[0];
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      // Max 400px width for small size
+      const ratio=Math.min(1,400/img.width);
+      canvas.width=img.width*ratio;
+      canvas.height=img.height*ratio;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      URL.revokeObjectURL(url);
+      res(canvas.toDataURL('image/jpeg',0.5));
+    };
+    img.onerror=()=>res(null);
+    img.src=url;
+  });
+}
+
+/* ══ HELPERS ══ */
+function opNm(id){return db.operators.find(o=>o.id===id)?.name||'—';}
+function opCl(id){return db.operators.find(o=>o.id===id)?.color||'#64748b';}
+function myOrds(){return user.role==='admin'?db.orders:db.orders.filter(o=>o.opId===user.op.id);}
+function myRets(){return user.role==='admin'?db.returns:db.returns.filter(r=>r.opId===user.op.id);}
+function Rs(n){return'Rs '+(n||0).toLocaleString();}
+function empty(n){return`<tr><td colspan="${n}"><div class="empty"><div class="empty-ic">📭</div><p>No records found.</p></div></td></tr>`;}
+function opTag(id){return`<span class="bdg" style="background:${opCl(id)}22;color:${opCl(id)};border-color:${opCl(id)}44;border:1px solid">${opNm(id)}</span>`;}
+function sbdg(s){
+  const m={pending:'bp',delivered:'bd',cancelled:'bx',returned:'brb'};
+  const l={pending:'Pending',delivered:'Delivered',cancelled:'Cancelled',returned:'Returned'};
+  return`<span class="bdg ${m[s]||'bp'}">${l[s]||s}</span>`;
+}
+function tyBdg(t){return t==='registry'?'<span class="bdg bv">📋 Registry</span>':'<span class="bdg bc">📦 VPL</span>';}
+function ds(d){return Math.floor((Date.now()-new Date(d))/86400000);}
+function isLate(o){
+  if(o.orderType==='registry'||o.status!=='delivered')return false;
+  return!db.moReqs.find(r=>r.orderId===o.id)&&ds(o.deliveredAt||o.date)>=7;
+}
+function moBdg(o){
+  if(o.orderType==='registry')return'<span class="bdg bv" style="font-size:10px">N/A</span>';
+  const mo=db.moReqs.find(r=>r.orderId===o.id);
+  if(!mo){
+    if(o.status==='delivered'){
+      const d=ds(o.deliveredAt||o.date);
+      if(d>=7)return`<span class="late-bdg">⚠ Late ${d}d</span>`;
+      return`<span class="bdg bp">Awaiting (${d}d)</span>`;
+    }
+    return'<span style="color:#475569;font-size:11px">—</span>';
+  }
+  if(mo.status==='approved')return'<span class="bdg bd">✓ Approved</span>';
+  if(mo.status==='rejected')return'<span class="bdg bx">✗ Rejected</span>';
+  return'<span class="bdg bc">🕐 Review</span>';
+}
+
+/* ══ LOGIN ══ */
+let aTab='admin';
+function setTab(t){
+  aTab=t;
+  document.getElementById('lt-a').classList.toggle('on',t==='admin');
+  document.getElementById('lt-o').classList.toggle('on',t==='operator');
+  document.getElementById('adf').style.display=t==='admin'?'block':'none';
+  document.getElementById('opf').style.display=t==='operator'?'block':'none';
+}
+function fillSel(){
+  const s=document.getElementById('opsel');
+  s.innerHTML='<option value="">— Select Member —</option>'+
+    db.operators.map(o=>`<option value="${o.id}">${o.name}${o.city?' · '+o.city:''}</option>`).join('');
+}
+function doLogin(){
+  document.getElementById('lerr').style.display='none';
+  if(aTab==='admin'){
+    if(document.getElementById('apw').value===APWD){user={role:'admin'};boot();}
+    else document.getElementById('lerr').style.display='block';
+  } else {
+    const id=parseInt(document.getElementById('opsel').value);
+    const pw=document.getElementById('oppw').value;
+    const op=db.operators.find(o=>o.id===id&&o.password===pw);
+    if(op){user={role:'operator',op};boot();}
+    else document.getElementById('lerr').style.display='block';
+  }
+}
+function doLogout(){
+  user=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('ls').style.display='flex';
+  document.getElementById('apw').value='';
+  document.getElementById('oppw').value='';
+  fillSel();
+  Object.values(charts).forEach(c=>c.destroy&&c.destroy());charts={};
+}
+
+/* ══ BOOT ══ */
+async function boot(){
+  document.getElementById('ls').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('tuser').textContent=user.role==='admin'?'Gul Abbas Khan':user.op.name;
+  const pl=document.getElementById('tpill');
+  pl.textContent=user.role==='admin'?'👑 Admin':'👤 Team';
+  pl.className='tpill '+(user.role==='admin'?'adm':'opr');
+  document.getElementById('tdate').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  // Show UI immediately with local data
+  buildSB();buildPages();
+  nav(user.role==='admin'?'dashboard':'op-home');
+  // Then load from cloud in background
+  setSS('spin');
+  loadFromCloud().then(loaded=>{
+    if(loaded){fillSel();buildSB();rc2();}
+    setSS('ok');
+  }).catch(()=>setSS('ok'));
+  // Refresh when user comes back to tab
+  document.addEventListener('visibilitychange',async()=>{
+    if(document.visibilityState==='visible'&&user){
+      const r=await loadFromCloud();
+      if(r){buildSB();const cur=document.querySelector('.page.on');if(cur)rp(cur.id.replace('p-',''),cur);}
+    }
+  });
+  // Auto refresh every 8 seconds - only if no pending save
+  setInterval(async()=>{
+    if(!user||saveTimer)return;
+    const r=await loadFromCloud();
+    if(r){buildSB();const cur=document.querySelector('.page.on');if(cur)rp(cur.id.replace('p-',''),cur);}
+  },8000);
+}
+
+/* ══ SIDEBAR ══ */
+function buildSB(){
+  const rc=db.returns.filter(r=>r.status==='pending').length;
+  const mc=db.moReqs.filter(r=>r.status==='pending').length;
+  const lc=db.orders.filter(isLate).length;
+  const rb=rc?`<span class="nbdg">${rc}</span>`:'';
+  const mb=mc?`<span class="nbdg">${mc}</span>`:'';
+  const lb=lc?`<span class="nbdg">${lc}</span>`:'';
+  document.getElementById('sidebar').innerHTML=user.role==='admin'?`
+    <div class="ng">Overview</div>
+    <div class="ni" data-p="dashboard"><div class="ni-ic">📊</div>Dashboard</div>
+    <div class="ng">Records</div>
+    <div class="ni" data-p="orders"><div class="ni-ic">📦</div>All Orders</div>
+    <div class="ni" data-p="patients"><div class="ni-ic">🧑‍⚕️</div>Patients</div>
+    <div class="ni" data-p="payments"><div class="ni-ic">💰</div>Payments</div>
+    <div class="ni" data-p="returns"><div class="ni-ic">↩</div>Returns ${rb}</div>
+    <div class="ng">Finance</div>
+    <div class="ni" data-p="mo-late"><div class="ni-ic">⚠️</div>Late MO ${lb}</div>
+    <div class="ni" data-p="mo-appr"><div class="ni-ic">✅</div>MO Approval ${mb}</div>
+    <div class="ni" data-p="commissions"><div class="ni-ic">💵</div>Commissions</div>
+    <div class="ng">Analytics</div>
+    <div class="ni" data-p="performance"><div class="ni-ic">🏆</div>Performance</div>
+    <div class="ng">Settings</div>
+    <div class="ni" data-p="team"><div class="ni-ic">⚙️</div>Team Members</div>
+  `:`
+    <div class="ng">Menu</div>
+    <div class="ni" data-p="op-home"><div class="ni-ic">📊</div>Dashboard</div>
+    <div class="ni" data-p="op-orders"><div class="ni-ic">📦</div>My Orders</div>
+    <div class="ni" data-p="op-patients"><div class="ni-ic">🧑‍⚕️</div>My Patients</div>
+    <div class="ni" data-p="op-returns"><div class="ni-ic">↩</div>Returns ${rb}</div>
+    <div class="ni" data-p="op-commission"><div class="ni-ic">💵</div>My Commission</div>
+  `;
+  document.querySelectorAll('.ni').forEach(el=>tap(el,()=>{nav(el.dataset.p);closeSB();}));
+}
+function toggleSB(){document.getElementById('sidebar').classList.toggle('on');document.getElementById('sov').classList.toggle('on');}
+function closeSB(){document.getElementById('sidebar').classList.remove('on');document.getElementById('sov').classList.remove('on');}
+
+/* ══ PAGES ══ */
+function buildPages(){
+  document.getElementById('main').innerHTML=user.role==='admin'?`
+    <div class="page" id="p-dashboard"></div><div class="page" id="p-orders"></div>
+    <div class="page" id="p-patients"></div><div class="page" id="p-payments"></div>
+    <div class="page" id="p-returns"></div><div class="page" id="p-mo-late"></div>
+    <div class="page" id="p-mo-appr"></div><div class="page" id="p-commissions"></div>
+    <div class="page" id="p-performance"></div><div class="page" id="p-team"></div>
+  `:`
+    <div class="page" id="p-op-home"></div><div class="page" id="p-op-orders"></div>
+    <div class="page" id="p-op-patients"></div><div class="page" id="p-op-returns"></div>
+    <div class="page" id="p-op-commission"></div>
+  `;
+}
+function nav(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  const pg=document.getElementById('p-'+id);if(!pg)return;
+  pg.classList.add('on');
+  document.querySelectorAll('.ni').forEach(n=>{if(n.dataset.p===id)n.classList.add('on');});
+  rp(id,pg);
+}
+function rc2(){
+  buildSB();
+  const cur=document.querySelector('.page.on');
+  if(cur)rp(cur.id.replace('p-',''),cur);
+}
+
+/* ══ RENDER ══ */
+function rp(id,pg){
+  switch(id){
+    case 'dashboard':rDash(pg);break;
+    case 'orders':rOrders(pg);break;
+    case 'patients':rPats(pg,'a');break;
+    case 'payments':rPay(pg);break;
+    case 'returns':rRets(pg,'a');break;
+    case 'mo-late':rMOLate(pg);break;
+    case 'mo-appr':rMOAppr(pg);break;
+    case 'commissions':rComm(pg,'a');break;
+    case 'performance':rPerf(pg);break;
+    case 'team':rTeam(pg);break;
+    case 'op-home':rOpHome(pg);break;
+    case 'op-orders':rOpOrds(pg);break;
+    case 'op-patients':rPats(pg,'o');break;
+    case 'op-returns':rRets(pg,'o');break;
+    case 'op-commission':rComm(pg,'o');break;
+  }
+}
+
+function rDash(pg){
+  const o=db.orders,r=db.returns,m=db.moReqs;
+  const late=o.filter(isLate).length;
+  const ac=buildComm(o);
+  const tOwed=ac.reduce((s,x)=>s+x.comm,0);
+  const tPaid=ac.filter(x=>x.status==='paid').reduce((s,x)=>s+x.comm,0);
+  const tPend=tOwed-tPaid;
+  const opCDs=db.operators.map(op=>{
+    const c=buildComm(o.filter(x=>x.opId===op.id));
+    return{...op,owed:c.reduce((s,x)=>s+x.comm,0),paid:c.filter(x=>x.status==='paid').reduce((s,x)=>s+x.comm,0)};
+  }).filter(x=>x.owed>0).sort((a,b)=>b.owed-a.owed);
+
+  pg.innerHTML=`
+  <div class="ph"><div><h2>Dashboard</h2><p>${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div></div>
+  <div style="background:linear-gradient(135deg,#065f46,#059669);border-radius:14px;padding:22px 26px;margin-bottom:18px;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-15px;top:-15px;width:160px;height:160px;background:rgba(255,255,255,.04);border-radius:50%"></div>
+    <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.9px;margin-bottom:5px">Total Business Revenue</div>
+    <div style="font-size:38px;font-weight:900;color:#fff;letter-spacing:-2px;margin-bottom:7px">${Rs(o.reduce((s,x)=>s+x.price,0))}</div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap">
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">✅ Advance: <strong>${Rs(o.reduce((s,x)=>s+x.advance,0))}</strong></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">⏳ Balance: <strong>${Rs(o.reduce((s,x)=>s+x.baaki,0))}</strong></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">📦 Orders: <strong>${o.length}</strong></div>
+    </div>
+  </div>
+  <div class="sg">
+    <div class="sc g"><div class="sl">Total Orders</div><div class="sv g">${o.length}</div><div class="ss">All time</div></div>
+    <div class="sc a"><div class="sl">Pending</div><div class="sv a">${o.filter(x=>x.status==='pending').length}</div></div>
+    <div class="sc b"><div class="sl">Delivered</div><div class="sv b">${o.filter(x=>x.status==='delivered').length}</div></div>
+    <div class="sc r"><div class="sl">Late MO</div><div class="sv r">${late}</div>${late?'<div class="ss" style="color:#fb7185">Action needed!</div>':''}</div>
+  </div>
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px 22px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div><div style="font-size:15px;font-weight:800;color:#f8fafc">💵 Commission Payment Tracker</div>
+      <div style="font-size:11px;color:#64748b;margin-top:2px">Gul Abbas Khan — Operator Earnings</div></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="text-align:center;background:#0a0f1a;padding:10px 14px;border-radius:9px;border:1px solid #334155">
+          <div style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.6px">Total Banti Hai</div>
+          <div style="font-size:20px;font-weight:900;color:#fbbf24;letter-spacing:-.4px;margin-top:2px">${Rs(tOwed)}</div>
+        </div>
+        <div style="text-align:center;background:#0a0f1a;padding:10px 14px;border-radius:9px;border:1px solid #334155">
+          <div style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.6px">Main Ne Di</div>
+          <div style="font-size:20px;font-weight:900;color:#34d399;letter-spacing:-.4px;margin-top:2px">${Rs(tPaid)}</div>
+        </div>
+        <div style="text-align:center;background:#0a0f1a;padding:10px 14px;border-radius:9px;border:1px solid ${tPend>0?'rgba(251,113,133,.3)':'#334155'}">
+          <div style="font-size:9px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.6px">Deni Baaki</div>
+          <div style="font-size:20px;font-weight:900;color:${tPend>0?'#fb7185':'#34d399'};letter-spacing:-.4px;margin-top:2px">${Rs(tPend)}</div>
+        </div>
+      </div>
+    </div>
+    ${opCDs.length?opCDs.map(op=>`
+    <div style="background:#0a0f1a;border-radius:9px;padding:11px 14px;display:flex;align-items:center;gap:11px;border:1px solid ${op.paid<op.owed?'rgba(251,113,133,.15)':'#1e293b'};margin-bottom:7px">
+      <div style="width:34px;height:34px;border-radius:8px;background:${op.color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px;flex-shrink:0">${op.name.slice(0,2)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:#e2e8f0">${op.name}</div>
+        <div style="display:flex;gap:10px;margin-top:3px;flex-wrap:wrap">
+          <span style="font-size:11px;color:#64748b">Banti: <strong style="color:#fbbf24">${Rs(op.owed)}</strong></span>
+          <span style="font-size:11px;color:#64748b">Di: <strong style="color:#34d399">${Rs(op.paid)}</strong></span>
+          <span style="font-size:11px;color:#64748b">Baaki: <strong style="color:${op.paid<op.owed?'#fb7185':'#34d399'}">${Rs(op.owed-op.paid)}</strong></span>
+        </div>
+        <div style="background:#1e293b;border-radius:3px;height:3px;margin-top:7px;overflow:hidden">
+          <div style="height:100%;border-radius:3px;background:linear-gradient(90deg,#059669,#10b981);width:${op.owed>0?Math.round((op.paid/op.owed)*100):0}%"></div>
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:14px;font-weight:900;color:${op.paid<op.owed?'#fb7185':'#34d399'}">${op.owed>0?Math.round((op.paid/op.owed)*100):100}%</div>
+        <div style="font-size:10px;color:#64748b;margin-top:1px">${op.paid<op.owed?'Pending':'Done ✓'}</div>
+      </div>
+    </div>`).join(''):`<div style="text-align:center;padding:18px;color:#64748b;font-size:13px">Orders add karo to commission data yahan dikhega.</div>`}
+  </div>
+  <div class="sg" style="grid-template-columns:repeat(4,1fr)">
+    <div class="sc o"><div class="sl">Returns</div><div class="sv o">${r.length}</div></div>
+    <div class="sc v"><div class="sl">MO Pending</div><div class="sv v">${m.filter(x=>x.status==='pending').length}</div></div>
+    <div class="sc g"><div class="sl">Comm Paid</div><div class="sv g">${Rs(tPaid)}</div></div>
+    <div class="sc r"><div class="sl">Comm Pending</div><div class="sv r">${Rs(tPend)}</div></div>
+  </div>
+  <div class="cr">
+    <div class="cb3"><h4>Orders by Member</h4><canvas id="cho" height="200"></canvas></div>
+    <div class="cb3"><h4>Revenue by Member</h4><canvas id="chr" height="200"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="ch2"><span class="ct">Recent Orders</span></div>
+    <div class="tw"><table><thead><tr><th>Team</th><th>Type</th><th>Patient</th><th>Phone</th><th>Price</th><th>Commission</th><th>Status</th><th>MO</th></tr></thead>
+    <tbody>${o.slice().reverse().slice(0,10).map(x=>`<tr class="${isLate(x)?'late-row':''}">
+      <td>${opTag(x.opId)}</td><td>${tyBdg(x.orderType)}</td>
+      <td><strong style="color:#e2e8f0">${x.name}</strong></td>
+      <td><a href="tel:${x.phone}" style="color:#60a5fa;text-decoration:none;font-weight:600">${x.phone}</a></td>
+      <td style="font-weight:700;color:#e2e8f0">${Rs(x.price)}</td>
+      <td style="color:#34d399;font-weight:800">${getComm(x.price)?Rs(getComm(x.price)):'—'}</td>
+      <td>${sbdg(x.status)}</td><td>${moBdg(x)}</td>
+    </tr>`).join('')||empty(8)}</tbody></table></div>
+  </div>`;
+  mkC('cho','bar',db.operators.map(o=>o.name),db.operators.map(op=>db.orders.filter(x=>x.opId===op.id).length),db.operators.map(o=>o.color+'cc'));
+  mkC('chr','doughnut',db.operators.map(o=>o.name),db.operators.map(op=>db.orders.filter(x=>x.opId===op.id).reduce((s,x)=>s+x.advance,0)),db.operators.map(o=>o.color+'cc'));
+}
+
+function rOrders(pg){
+  pg.innerHTML=`
+  <div class="ph"><div><h2>All Orders</h2><p>All team members</p></div>
+  <div class="pha"><button class="btn bamb bsm" onclick="exportCSV()">⬇ Export</button></div></div>
+  <div class="fb">
+    <div class="sb">🔍 <input id="aos" placeholder="Search…" oninput="rOrds2()"></div>
+    <select class="fsl" id="aoop" onchange="rOrds2()"><option value="">All Members</option>${db.operators.map(o=>`<option value="${o.id}">${o.name}</option>`).join('')}</select>
+    <select class="fsl" id="aost" onchange="rOrds2()"><option value="">All Status</option><option value="pending">Pending</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option><option value="returned">Returned</option></select>
+  </div>
+  <div class="card"><div class="tw"><table>
+  <thead><tr><th>#</th><th>Team</th><th>Type</th><th>Patient</th><th>Phone</th><th>City</th><th>Condition</th><th>Price</th><th>Advance</th><th>Balance</th><th>Comm</th><th>Status</th><th>MO</th><th>Photo</th><th>Date</th><th>Actions</th></tr></thead>
+  <tbody id="orders-tb"></tbody></table></div></div>`;
+  rOrds2();
+}
+function rOrds2(){
+  const s=(document.getElementById('aos')?.value||'').toLowerCase();
+  const opF=document.getElementById('aoop')?.value;
+  const stF=document.getElementById('aost')?.value;
+  let rows=db.orders.slice().reverse();
+  if(s)rows=rows.filter(o=>o.name.toLowerCase().includes(s)||o.phone.includes(s)||opNm(o.opId).toLowerCase().includes(s));
+  if(opF)rows=rows.filter(o=>o.opId==opF);
+  if(stF)rows=rows.filter(o=>o.status===stF);
+  const tb=document.getElementById('orders-tb');if(!tb)return;
+  tb.innerHTML=rows.map((o,i)=>`<tr class="${isLate(o)?'late-row':''}">
+    <td style="color:#64748b;font-size:11px">${i+1}</td>
+    <td>${opTag(o.opId)}</td><td>${tyBdg(o.orderType)}</td>
+    <td><strong style="color:#e2e8f0">${o.name}</strong></td>
+    <td><a href="tel:${o.phone}" style="color:#60a5fa;text-decoration:none;font-weight:600">${o.phone}</a></td>
+    <td>${o.city||'—'}</td><td>${o.disease||'—'}</td>
+    <td style="font-weight:700;color:#e2e8f0">${Rs(o.price)}</td>
+    <td style="color:#34d399;font-weight:700">${Rs(o.advance)}</td>
+    <td style="color:${o.baaki>0?'#fb7185':'#34d399'};font-weight:700">${Rs(o.baaki)}</td>
+    <td style="color:#34d399;font-weight:800">${getComm(o.price)?Rs(getComm(o.price)):'—'}</td>
+    <td>${sbdg(o.status)}</td><td>${moBdg(o)}</td>
+    <td>${o.dispatchPhoto?`<img src="${o.dispatchPhoto}" style="width:40px;height:40px;border-radius:5px;object-fit:cover;border:1px solid #334155;cursor:pointer" onclick="window.open('${o.dispatchPhoto}')">`:'—'}</td>
+    <td style="font-size:11px;color:#64748b">${new Date(o.date).toLocaleDateString()}</td>
+    <td><div style="display:flex;gap:4px;flex-wrap:wrap">
+      <button class="btn bxs bout" data-action="edit-order" data-id="${o.id}">Edit</button>
+      <button class="btn bxs brd" data-action="del-order" data-id="${o.id}">🗑</button>
+    </div></td>
+  </tr>`).join('')||empty(16);
+}
+
+function rPats(pg,m){
+  const isA=m==='a';
+  pg.innerHTML=`
+  <div class="ph"><div><h2>Patients</h2><p>${isA?'All patients':'Your patients'}</p></div></div>
+  <div class="fb"><div class="sb">🔍 <input id="pts-s" placeholder="Name or phone…" oninput="rPats2('${m}')"></div></div>
+  <div class="card"><div class="tw"><table>
+  <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>City</th><th>Condition</th><th>Orders</th><th>Returns</th><th>First Visit</th></tr></thead>
+  <tbody id="pats-tb"></tbody></table></div></div>`;
+  rPats2(m);
+}
+function rPats2(m){
+  const isA=m==='a';const s=(document.getElementById('pts-s')?.value||'').toLowerCase();
+  const orders=isA?db.orders:myOrds();const map={};
+  orders.forEach(o=>{const k=o.phone;
+    if(!map[k])map[k]={name:o.name,phone:o.phone,city:o.city||'',diseases:new Set(),count:0,rets:0,first:o.date};
+    map[k].count++;if(o.disease)map[k].diseases.add(o.disease);
+    if(new Date(o.date)<new Date(map[k].first))map[k].first=o.date;
+  });
+  db.returns.forEach(r=>{if(map[r.phone])map[r.phone].rets++;});
+  let pts=Object.values(map);if(s)pts=pts.filter(p=>p.name.toLowerCase().includes(s)||p.phone.includes(s));
+  const tb=document.getElementById('pats-tb');if(!tb)return;
+  tb.innerHTML=pts.map((p,i)=>`<tr>
+    <td style="color:#64748b;font-size:11px">${i+1}</td>
+    <td><strong style="color:#e2e8f0">${p.name}</strong></td>
+    <td><a href="tel:${p.phone}" style="color:#60a5fa;text-decoration:none;font-weight:600">${p.phone}</a></td>
+    <td>${p.city||'—'}</td><td>${[...p.diseases].join(', ')||'—'}</td>
+    <td><span class="bdg bd">${p.count}</span></td>
+    <td>${p.rets>0?`<span class="bdg brb">${p.rets}</span>`:'0'}</td>
+    <td style="font-size:11px;color:#64748b">${new Date(p.first).toLocaleDateString()}</td>
+  </tr>`).join('')||empty(8);
+}
+
+function rPay(pg){
+  const o=db.orders;
+  pg.innerHTML=`
+  <div class="ph"><div><h2>Payments</h2><p>Financial records</p></div></div>
+  <div class="sg" style="grid-template-columns:repeat(3,1fr)">
+    <div class="sc g"><div class="sl">Total Advance</div><div class="sv g">${Rs(o.reduce((s,x)=>s+x.advance,0))}</div></div>
+    <div class="sc r"><div class="sl">Balance Due</div><div class="sv r">${Rs(o.reduce((s,x)=>s+x.baaki,0))}</div></div>
+    <div class="sc b"><div class="sl">Gross Revenue</div><div class="sv b">${Rs(o.reduce((s,x)=>s+x.price,0))}</div></div>
+  </div>
+  <div class="card"><div class="tw"><table>
+  <thead><tr><th>Team</th><th>Type</th><th>Patient</th><th>Phone</th><th>Total</th><th>Advance</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead>
+  <tbody>${o.length?o.slice().reverse().map(x=>`<tr>
+    <td>${opTag(x.opId)}</td><td>${tyBdg(x.orderType)}</td>
+    <td><strong style="color:#e2e8f0">${x.name}</strong></td><td>${x.phone}</td>
+    <td style="font-weight:700;color:#e2e8f0">${Rs(x.price)}</td>
+    <td style="color:#34d399;font-weight:700">${Rs(x.advance)}</td>
+    <td style="color:${x.baaki>0?'#fb7185':'#34d399'};font-weight:700">${Rs(x.baaki)}</td>
+    <td>${x.baaki===0?'<span class="bdg bd">Paid ✓</span>':'<span class="bdg bp">Due</span>'}</td>
+    <td>${x.baaki>0?`<button class="btn bxs bp2" data-action="mark-paid" data-id="${x.id}">Mark Paid</button>`:'—'}</td>
+  </tr>`).join(''):empty(9)}</tbody></table></div></div>`;
+}
+
+function rRets(pg,m){
+  const isA=m==='a';const rets=isA?db.returns:myRets();
+  pg.innerHTML=`
+  <div class="ph"><div><h2>Returns & Refunds</h2><p>${isA?'All returns':'Your returns'}</p></div>
+  ${isA?'<div class="pha"><button class="btn bamb bsm" onclick="exportRetCSV()">⬇ Export</button></div>':''}</div>
+  <div class="sg" style="grid-template-columns:repeat(${isA?3:2},1fr)">
+    <div class="sc o"><div class="sl">Total Returns</div><div class="sv o">${rets.length}</div></div>
+    <div class="sc r"><div class="sl">Total Refunds</div><div class="sv r">${Rs(rets.reduce((s,r)=>s+(r.refund||0),0))}</div></div>
+    ${isA?`<div class="sc a"><div class="sl">Pending Review</div><div class="sv a">${rets.filter(r=>r.status==='pending').length}</div></div>`:''}
+  </div>
+  <div class="card"><div class="tw"><table>
+  <thead><tr><th>#</th>${isA?'<th>Team</th>':''}<th>Patient</th><th>Phone</th><th>Reason</th><th>Refund</th><th>Stock</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+  <tbody>${rets.length?rets.slice().reverse().map((r,i)=>`<tr>
+    <td style="color:#64748b;font-size:11px">${i+1}</td>
+    ${isA?`<td>${opTag(r.opId)}</td>`:''}
+    <td><strong style="color:#e2e8f0">${r.patName}</strong></td>
+    <td><a href="tel:${r.phone}" style="color:#60a5fa;text-decoration:none;font-weight:600">${r.phone}</a></td>
+    <td style="font-size:12px">${r.reason}</td>
+    <td style="color:#fb7185;font-weight:700">${Rs(r.refund)}</td>
+    <td><span class="bdg ${r.stockBack==='yes'?'bd':'bx'}">${r.stockBack==='yes'?'Yes':'No'}</span></td>
+    <td style="font-size:11px;color:#64748b">${new Date(r.date).toLocaleDateString()}</td>
+    <td>${r.status==='pending'?'<span class="bdg bp">Pending</span>':'<span class="bdg bd">Resolved</span>'}</td>
+    <td><div style="display:flex;gap:4px">
+      ${r.status==='pending'&&isA?`<button class="btn bxs bp2" data-action="res-ret" data-id="${r.id}">Resolve</button>`:''}
+      <button class="btn bxs brd" data-action="del-ret" data-id="${r.id}">🗑</button>
+    </div></td>
+  </tr>`).join(''):empty(isA?10:9)}</tbody></table></div></div>`;
+}
+
+function rMOLate(pg){
+  const late=db.orders.filter(isLate);
+  pg.innerHTML=`
+  <div class="ph"><div><h2>⚠️ Late Money Orders</h2><p>Delivered 7+ days — MO not submitted</p></div></div>
+  <div style="background:rgba(225,29,72,.1);border:1px solid rgba(251,113,133,.25);border-radius:11px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+    <span style="font-size:26px">🔴</span>
+    <div><strong style="color:#fb7185;font-size:14px">${late.length} Order(s) Late</strong>
+    <div style="font-size:12px;color:#f87171;margin-top:2px">${late.length?'Operators se farori contact karo.':'All clear! No late MOs ✓'}</div></div>
+  </div>
+  <div class="card"><div class="tw"><table>
+  <thead><tr><th>#</th><th>Team</th><th>Patient</th><th>Phone</th><th>Condition</th><th>Price</th><th>Commission</th><th>Delivered</th><th>Days Late</th></tr></thead>
+  <tbody>${late.length?late.map((o,i)=>`<tr class="late-row">
+    <td style="color:#64748b;font-size:11px">${i+1}</td>
+    <td>${opTag(o.opId)}</td>
+    <td><strong style="color:#e2e8f0">${o.name}</strong></td>
+    <td><a href="tel:${o.phone}" style="color:#60a5fa;text-decoration:none;font-weight:600">${o.phone}</a></td>
+    <td style="font-size:12px">${o.disease||'—'}</td>
+    <td style="font-weight:700;color:#e2e8f0">${Rs(o.price)}</td>
+    <td style="color:#34d399;font-weight:800">${getComm(o.price)?Rs(getComm(o.price)):'—'}</td>
+    <td style="font-size:11px;color:#64748b">${new Date(o.deliveredAt||o.date).toLocaleDateString()}</td>
+    <td><span class="late-bdg">⚠ ${ds(o.deliveredAt||o.date)} days</span></td>
+  </tr>`).join(''):empty(9)}</tbody></table></div></div>`;
+}
+
+function rMOAppr(pg){
+  const all=db.moReqs;
+  pg.innerHTML=`
+  <div class="ph"><div><h2>MO Approval</h2><p>Review money order submissions</p></div></div>
+  <div class="sg" style="grid-template-columns:repeat(3,1fr)">
+    <div class="sc a"><div class="sl">Pending</div><div class="sv a">${all.filter(r=>r.status==='pending').length}</div></div>
+    <div class="sc g"><div class="sl">Approved</div><div class="sv g">${all.filter(r=>r.status==='approved').length}</div></div>
+    <div class="sc r"><div class="sl">Rejected</div><div class="sv r">${all.filter(r=>r.status==='rejected').length}</div></div>
+  </div>
+  <div class="card"><div class="tw"><table>
+  <thead><tr><th>#</th><th>Team</th><th>Patient</th><th>MO Amount</th><th>MO Photo</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead>
+  <tbody>${all.length?all.slice().reverse().map((r,i)=>`<tr>
+    <td style="color:#64748b;font-size:11px">${i+1}</td>
+    <td>${opTag(r.opId)}</td>
+    <td><strong style="color:#e2e8f0">${r.patName}</strong><div style="font-size:11px;color:#64748b">${r.phone}</div></td>
+    <td style="color:#34d399;font-weight:800">${Rs(r.moAmt)}</td>
+    <td>${r.photo?`<img src="${r.photo}" style="width:44px;height:44px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid #334155" onclick="window.open('${r.photo}')">`:'—'}</td>
+    <td style="font-size:11px;color:#64748b">${new Date(r.createdAt).toLocaleDateString()}</td>
+    <td>${r.status==='pending'?'<span class="bdg bc">🕐 Pending</span>':r.status==='approved'?'<span class="bdg bd">✓ Approved</span>':'<span class="bdg bx">✗ Rejected</span>'}</td>
+    <td>${r.status==='pending'?`<button class="btn bxs bp2" data-action="appr-mo" data-id="${r.id}">Review</button>`:'—'}</td>
+  </tr>`).join(''):empty(8)}</tbody></table></div></div>`;
+}
+
+function rComm(pg,m){
+  const isA=m==='a';
+  const ords=isA?db.orders:db.orders.filter(o=>o.opId===user.op.id);
+  const all=buildComm(ords);
+  const paid=all.filter(r=>r.status==='paid').reduce((s,r)=>s+r.comm,0);
+  const pnd=all.filter(r=>r.status==='pending').reduce((s,r)=>s+r.comm,0);
+  pg.innerHTML=isA?`
+  <div class="ph"><div><h2>Commissions</h2><p>All team earnings</p></div>
+  <div class="pha"><button class="btn bamb bsm" onclick="exportCommCSV()">⬇ Export</button></div></div>
+  <div class="sg" style="grid-template-columns:repeat(3,1fr)">
+    <div class="sc g"><div class="sl">Paid Out</div><div class="sv g">${Rs(paid)}</div></div>
+    <div class="sc a"><div class="sl">Pending</div><div class="sv a">${Rs(pnd)}</div></div>
+    <div class="sc b"><div class="sl">Grand Total</div><div class="sv b">${Rs(paid+pnd)}</div></div>
+  </div>
+  <div class="slbl" style="margin:0 0 9px">Commission Slabs</div>
+  <div class="slab-grid">
+    <div class="slab"><div class="slab-r">Rs 1,000–2,000</div><div class="slab-c">Rs 300</div></div>
+    <div class="slab"><div class="slab-r">Rs 2,100–3,000</div><div class="slab-c">Rs 350</div></div>
+    <div class="slab"><div class="slab-r">Rs 3,100–4,000</div><div class="slab-c">Rs 400</div></div>
+    <div class="slab"><div class="slab-r">Rs 4,100–5,000</div><div class="slab-c">Rs 450</div></div>
+    <div class="slab"><div class="slab-r">Rs 5,100–6,000</div><div class="slab-c">Rs 500</div></div>
+    <div class="slab"><div class="slab-r">Registry</div><div class="slab-c">Instant ✓</div></div>
+  </div>
+  <div class="card"><div class="tw"><table>
+  <thead><tr><th>Member</th><th>Patient</th><th>Price</th><th>Commission</th><th>Type</th><th>Status</th><th>Date</th></tr></thead>
+  <tbody>${all.length?all.slice().reverse().map(r=>`<tr>
+    <td>${opTag(r.opId)}</td><td><strong style="color:#e2e8f0">${r.patName}</strong></td>
+    <td style="font-weight:700;color:#e2e8f0">${Rs(r.price)}</td>
+    <td style="color:#34d399;font-weight:900;font-size:14px">${Rs(r.comm)}</td>
+    <td>${tyBdg(r.type==='Registry'?'registry':'vpl')}</td>
+    <td>${r.status==='paid'?'<span class="bdg bd">Paid ✓</span>':'<span class="bdg bp">Pending</span>'}</td>
+    <td style="font-size:11px;color:#64748b">${new Date(r.date).toLocaleDateString()}</td>
+  </tr>`).join(''):empty(7)}</tbody></table></div></div>
+  `:`
+  <div class="ph"><div><h2>My Commission</h2><p>Your private earnings</p></div></div>
+  <div class="cban"><h3>Total Earned</h3><div class="cv">${Rs(paid)}</div><p>${all.filter(r=>r.status==='paid').length} payments received</p></div>
+  <div class="sg" style="grid-template-columns:repeat(3,1fr)">
+    <div class="sc g"><div class="sl">Paid</div><div class="sv g">${Rs(paid)}</div></div>
+    <div class="sc a"><div class="sl">Pending</div><div class="sv a">${Rs(pnd)}</div></div>
+    <div class="sc b"><div class="sl">Total Orders</div><div class="sv b">${all.length}</div></div>
+  </div>
+  <div class="card"><div class="tw"><table>
+  <thead><tr><th>#</th><th>Patient</th><th>Price</th><th>Commission</th><th>Type</th><th>Status</th><th>Date</th></tr></thead>
+  <tbody>${all.length?all.slice().reverse().map((r,i)=>`<tr>
+    <td style="color:#64748b;font-size:11px">${i+1}</td>
+    <td><strong style="color:#e2e8f0">${r.patName}</strong></td>
+    <td style="font-weight:700;color:#e2e8f0">${Rs(r.price)}</td>
+    <td style="color:#34d399;font-weight:900;font-size:14px">${Rs(r.comm)}</td>
+    <td>${tyBdg(r.type==='Registry'?'registry':'vpl')}</td>
+    <td>${r.status==='paid'?'<span class="bdg bd">Paid ✓</span>':'<span class="bdg bp">Pending — MO awaited</span>'}</td>
+    <td style="font-size:11px;color:#64748b">${new Date(r.date).toLocaleDateString()}</td>
+  </tr>`).join(''):empty(7)}</tbody></table></div></div>`;
+}
+
+function rPerf(pg){
+  const ops=db.operators.map(o=>{
+    const ords=db.orders.filter(x=>x.opId===o.id);
+    const rets=db.returns.filter(x=>x.opId===o.id).length;
+    const rev=ords.reduce((s,x)=>s+x.advance,0);
+    const del=ords.filter(x=>x.status==='delivered').length;
+    const rr=ords.length>0?rets/ords.length:0;
+    const score=ords.length?Math.min(100,Math.round((del/Math.max(1,ords.length))*60+(Math.min(ords.length,40)/40)*30+(1-Math.min(rr,.5)/.5)*10)):0;
+    return{...o,orders:ords.length,rev,del,rets,score};
+  }).sort((a,b)=>b.score-a.score);
+  const ic=['🥇','🥈','🥉'];
+  pg.innerHTML=`
+  <div class="ph"><div><h2>Performance</h2><p>Team rankings</p></div></div>
+  <div class="cr">
+    <div class="cb3"><h4>Orders Ranking</h4><canvas id="chpb" height="250"></canvas></div>
+    <div class="cb3"><h4>Revenue Ranking</h4><canvas id="chpr" height="250"></canvas></div>
+  </div>
+  <div class="card cbody">${ops.map((o,i)=>`
+    <div class="pfr">
+      <div style="font-size:17px;width:24px;text-align:center">${ic[i]||`#${i+1}`}</div>
+      <div class="pfav" style="background:${o.color}">${o.name.slice(0,2)}</div>
+      <div class="pfinf">
+        <div class="pfnm">${o.name}${o.city?` <span style="font-weight:400;color:#64748b">· ${o.city}</span>`:''}</div>
+        <div class="pfmt">${o.orders} orders · ${Rs(o.rev)} · ${o.rets} returns</div>
+        <div class="pfbg"><div class="pfbr" style="width:${o.score}%;background:${o.color}"></div></div>
+      </div>
+      <div class="pfsc" style="color:${o.color}">${o.score}%</div>
+    </div>`).join('')}</div>`;
+  mkC('chpb','bar',ops.map(o=>o.name),ops.map(o=>o.orders),ops.map(o=>o.color+'cc'));
+  mkC('chpr','bar',ops.map(o=>o.name),ops.map(o=>o.rev),ops.map(o=>o.color+'cc'));
+}
+
+function rTeam(pg){
+  pg.innerHTML=`
+  <div class="ph"><div><h2>Team Members</h2></div>
+  <div class="pha"><button class="btn bp2 bsm" onclick="openOpM()">+ Add Member</button></div></div>
+  <div class="card"><div class="tw"><table>
+  <thead><tr><th>#</th><th>Member</th><th>City</th><th>Password</th><th>Orders</th><th>Returns</th><th>Revenue</th><th>Comm Paid</th><th>Actions</th></tr></thead>
+  <tbody>${db.operators.map((o,i)=>{
+    const ords=db.orders.filter(x=>x.opId===o.id);
+    const rets=db.returns.filter(x=>x.opId===o.id).length;
+    const cp=buildComm(ords).filter(r=>r.status==='paid').reduce((s,r)=>s+r.comm,0);
+    return`<tr>
+      <td><div style="width:34px;height:34px;border-radius:8px;background:${o.color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px">${o.name.slice(0,2)}</div></td>
+      <td><strong style="color:#e2e8f0">${o.name}</strong></td><td>${o.city||'—'}</td>
+      <td><code style="background:#0a0f1a;padding:2px 7px;border-radius:5px;font-size:12px;border:1px solid #334155;color:#94a3b8">${o.password}</code></td>
+      <td><span class="bdg bd">${ords.length}</span></td>
+      <td>${rets>0?`<span class="bdg brb">${rets}</span>`:'0'}</td>
+      <td style="color:#34d399;font-weight:700">${Rs(ords.reduce((s,x)=>s+x.advance,0))}</td>
+      <td style="color:#34d399;font-weight:800">${Rs(cp)}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn bxs bout" data-action="edit-op" data-id="${o.id}">Edit</button>
+        <button class="btn bxs brd" data-action="del-op" data-id="${o.id}">🗑</button>
+      </div></td>
+    </tr>`;}).join('')}</tbody></table></div></div>`;
+}
+
+function rOpHome(pg){
+  const op=user.op;const ords=myOrds();
+  const myC=buildComm(ords);const lc=ords.filter(isLate).length;
+  pg.innerHTML=`
+  <div class="wb"><div class="wbic">👋</div><div>
+    <h2>Welcome, ${op.name}</h2>
+    <p>${op.city||'Dawakhana'} · ${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}</p>
+  </div></div>
+  ${lc?`<div style="background:rgba(225,29,72,.1);border:1px solid rgba(251,113,133,.25);border-radius:11px;padding:13px 16px;margin-bottom:14px;display:flex;align-items:center;gap:11px">
+    <span style="font-size:22px">⚠️</span>
+    <div><strong style="color:#fb7185;font-size:13px">${lc} Money Order(s) Late!</strong>
+    <div style="font-size:12px;color:#f87171;margin-top:2px">MO photos submit karo — commission ruk jaayegi.</div></div>
+  </div>`:''}
+  <div class="sg">
+    <div class="sc g"><div class="sl">My Orders</div><div class="sv g">${ords.length}</div></div>
+    <div class="sc a"><div class="sl">Pending</div><div class="sv a">${ords.filter(o=>o.status==='pending').length}</div></div>
+    <div class="sc b"><div class="sl">Advance</div><div class="sv b">${Rs(ords.reduce((s,o)=>s+o.advance,0))}</div></div>
+    <div class="sc v"><div class="sl">Commission Earned</div><div class="sv v">${Rs(myC.filter(r=>r.status==='paid').reduce((s,r)=>s+r.comm,0))}</div></div>
+  </div>
+  <div class="card">
+    <div class="ch2"><span class="ct">Recent Orders</span><button class="btn bp2 bsm" onclick="openOrderM()">+ New Order</button></div>
+    <div class="tw"><table>
+    <thead><tr><th>Patient</th><th>Type</th><th>Price</th><th>Commission</th><th>Status</th><th>MO</th><th>Actions</th></tr></thead>
+    <tbody>${ords.slice().reverse().slice(0,8).map(o=>`<tr class="${isLate(o)?'late-row':''}">
+      <td><strong style="color:#e2e8f0">${o.name}</strong><div style="font-size:11px;color:#64748b">${o.phone}</div></td>
+      <td>${tyBdg(o.orderType)}</td>
+      <td style="font-weight:700;color:#e2e8f0">${Rs(o.price)}</td>
+      <td style="color:#34d399;font-weight:800">${getComm(o.price)?Rs(getComm(o.price)):'—'}</td>
+      <td>${sbdg(o.status)}</td><td>${moBdg(o)}</td>
+      <td><div style="display:flex;gap:4px;flex-wrap:wrap">
+        ${o.status!=='delivered'&&o.status!=='returned'&&o.status!=='cancelled'?`<button class="btn bxs bp2" data-action="delivered" data-id="${o.id}">📦 Del</button>`:''}
+        ${o.status==='delivered'&&o.orderType!=='registry'&&!db.moReqs.find(r=>r.orderId===o.id)?`<button class="btn bxs bgold" data-action="submit-mo" data-id="${o.id}">💵 MO</button>`:''}
+        <button class="btn bxs brd" data-action="del-order" data-id="${o.id}">🗑</button>
+      </div></td>
+    </tr>`).join('')||empty(7)}</tbody></table></div>
+  </div>`;
+}
+
+function rOpOrds(pg){
+  pg.innerHTML=`
+  <div class="ph"><div><h2>My Orders</h2></div>
+  <div class="pha"><button class="btn bp2 bsm" onclick="openOrderM()">+ New Order</button><button class="btn bamb bsm" onclick="exportCSV(true)">⬇ Export</button></div></div>
+  <div class="fb"><div class="sb">🔍 <input id="oo-s" placeholder="Search…" oninput="rOpOrds2()"></div></div>
+  <div class="card"><div class="tw"><table>
+  <thead><tr><th>#</th><th>Patient</th><th>Phone</th><th>Type</th><th>Price</th><th>Advance</th><th>Balance</th><th>Commission</th><th>Status</th><th>MO</th><th>Photo</th><th>Actions</th></tr></thead>
+  <tbody id="op-ords-tb"></tbody></table></div></div>`;
+  rOpOrds2();
+}
+function rOpOrds2(){
+  const s=(document.getElementById('oo-s')?.value||'').toLowerCase();
+  let ords=myOrds().slice().reverse();
+  if(s)ords=ords.filter(o=>o.name.toLowerCase().includes(s)||o.phone.includes(s));
+  const tb=document.getElementById('op-ords-tb');if(!tb)return;
+  tb.innerHTML=ords.map((o,i)=>`<tr class="${isLate(o)?'late-row':''}">
+    <td style="color:#64748b;font-size:11px">${i+1}</td>
+    <td><strong style="color:#e2e8f0">${o.name}</strong></td>
+    <td><a href="tel:${o.phone}" style="color:#60a5fa;text-decoration:none;font-weight:600">${o.phone}</a></td>
+    <td>${tyBdg(o.orderType)}</td>
+    <td style="font-weight:700;color:#e2e8f0">${Rs(o.price)}</td>
+    <td style="color:#34d399;font-weight:700">${Rs(o.advance)}</td>
+    <td style="color:${o.baaki>0?'#fb7185':'#34d399'};font-weight:700">${Rs(o.baaki)}</td>
+    <td style="color:#34d399;font-weight:800">${getComm(o.price)?Rs(getComm(o.price)):'—'}</td>
+    <td>${sbdg(o.status)}</td><td>${moBdg(o)}</td>
+    <td>${o.dispatchPhoto?`<img src="${o.dispatchPhoto}" style="width:40px;height:40px;border-radius:5px;object-fit:cover;cursor:pointer;border:1px solid #334155" onclick="window.open('${o.dispatchPhoto}')">`:'—'}</td>
+    <td><div style="display:flex;gap:4px;flex-wrap:wrap">
+      ${o.status!=='delivered'&&o.status!=='returned'&&o.status!=='cancelled'?`<button class="btn bxs bp2" data-action="delivered" data-id="${o.id}">📦</button>`:''}
+      ${o.status==='delivered'&&o.orderType!=='registry'&&!db.moReqs.find(r=>r.orderId===o.id)?`<button class="btn bxs bgold" data-action="submit-mo" data-id="${o.id}">💵</button>`:''}
+      <button class="btn bxs bout" data-action="edit-order" data-id="${o.id}">Edit</button>
+      <button class="btn bxs bo2" data-action="ret-order" data-id="${o.id}">↩</button>
+      <button class="btn bxs brd" data-action="del-order" data-id="${o.id}">🗑</button>
+    </div></td>
+  </tr>`).join('')||empty(12);
+}
+
+/* ══ CHART ══ */
+function mkC(id,type,labels,data,colors){
+  if(charts[id])charts[id].destroy();
+  const el=document.getElementById(id);if(!el)return;
+  charts[id]=new Chart(el,{type,data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:type==='bar'?7:0,borderSkipped:false,borderWidth:1.5}]},
+    options:{plugins:{legend:{display:type!=='bar',position:'right',labels:{font:{size:10},boxWidth:9,color:'#94a3b8'}}},
+    scales:type==='bar'?{y:{beginAtZero:true,grid:{color:'#1e293b'},ticks:{font:{size:9},color:'#64748b'},border:{color:'#334155'}},
+    x:{ticks:{font:{size:9},color:'#64748b'},border:{color:'#334155'},grid:{color:'transparent'}}}:{},
+    responsive:true,maintainAspectRatio:true}});
+}
+
+/* ══ ORDER TYPE ══ */
+function setOT(t){
+  curOT=t;
+  document.getElementById('ot-v').className='otb'+(t==='vpl'?' cv':'');
+  document.getElementById('ot-r').className='otb'+(t==='registry'?' rg':'');
+  document.getElementById('reg-note').style.display=t==='registry'?'block':'none';
+  const ps=document.getElementById('pay-sec');if(ps)ps.style.display=t==='registry'?'block':'none';
+  updComm();
+}
+
+/* ══ COMMISSION DISPLAY ══ */
+function updComm(){
+  const fpr=document.getElementById('fpr');if(!fpr)return;
+  const p=parseFloat(fpr.value)||0;
+  const fad=document.getElementById('fad');const fbk=document.getElementById('fbk');
+  if(fad&&fbk)fbk.value=Math.max(0,p-(parseFloat(fad.value)||0));
+  const disp=document.getElementById('comm-display');if(!disp)return;
+  if(p>0){
+    disp.style.display='block';
+    const c=getComm(p);
+    const box=document.getElementById('cbox');
+    const amt=document.getElementById('camt');
+    if(c>0){
+      box.className='cbox';amt.className='camt';amt.textContent=Rs(c);
+      document.getElementById('cinfo').textContent=curOT==='registry'?'💚 Instant — Registry':'⏳ On MO Approval — VPL';
+      let sl='';
+      if(p>=1000&&p<=2000)sl='Slab: Rs 1,000–2,000';
+      else if(p>=2100&&p<=3000)sl='Slab: Rs 2,100–3,000';
+      else if(p>=3100&&p<=4000)sl='Slab: Rs 3,100–4,000';
+      else if(p>=4100&&p<=5000)sl='Slab: Rs 4,100–5,000';
+      else if(p>=5100&&p<=6000)sl='Slab: Rs 5,100–6,000';
+      document.getElementById('cslab').textContent=sl;
+    } else {
+      box.className='cbox none';amt.className='camt none';
+      amt.textContent='No commission for this price';
+      document.getElementById('cinfo').textContent='Outside commission slabs';
+      document.getElementById('cslab').textContent='';
+    }
+  } else {disp.style.display='none';}
+}
+
+/* ══ ORDER CRUD ══ */
+function openOrderM(id){
+  eOid=id||null;
+  document.getElementById('mot').textContent=id?'Edit Order':'New Order';
+  const fields={fn:'name',fph:'phone',fct:'city',fds:'disease',fadr:'address',fnt:'notes'};
+  if(id){
+    const o=db.orders.find(x=>x.id===id);
+    Object.entries(fields).forEach(([fid,key])=>{const el=document.getElementById(fid);if(el)el.value=o[key]||'';});
+    document.getElementById('fpr').value=o.price||'';
+    document.getElementById('fad').value=o.advance||'';
+    document.getElementById('fbk').value=o.baaki||'';
+    document.getElementById('fst').value=o.status||'pending';
+    setOT(o.orderType||'vpl');
+    const di=document.getElementById('dispatch-img');
+    if(di){di.src=o.dispatchPhoto||'';di.style.display=o.dispatchPhoto?'block':'none';}
+    const pi=document.getElementById('pay-img');
+    if(pi){pi.src=o.paymentPhoto||'';pi.style.display=o.paymentPhoto?'block':'none';}
+  } else {
+    Object.keys(fields).forEach(fid=>{const el=document.getElementById(fid);if(el)el.value='';});
+    ['fpr','fad','fbk'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});
+    document.getElementById('fst').value='pending';
+    setOT('vpl');
+    ['dispatch-img','pay-img'].forEach(id=>{const el=document.getElementById(id);if(el){el.src='';el.style.display='none';}});
+    document.getElementById('comm-display').style.display='none';
+  }
+  ['dispatch-file','pay-file'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  openM('m-order');
+}
+async function saveOrder(){
+  const name=document.getElementById('fn').value.trim();
+  const phone=document.getElementById('fph').value.trim();
+  if(!name||!phone){toast('Patient Name and Phone are required.','❌',true);return;}
+  const opId=user.role==='operator'?user.op.id:(eOid?db.orders.find(x=>x.id===eOid)?.opId:db.operators[0].id);
+  const dp=null,pp=null;
+  const order={
+    id:eOid||Date.now(),opId,name,phone,
+    city:document.getElementById('fct').value.trim(),
+    disease:document.getElementById('fds').value.trim(),
+    address:document.getElementById('fadr').value.trim(),
+    orderType:curOT,dispatchPhoto:dp,paymentPhoto:pp,
+    price:parseFloat(document.getElementById('fpr').value)||0,
+    advance:parseFloat(document.getElementById('fad').value)||0,
+    baaki:parseFloat(document.getElementById('fbk').value)||0,
+    status:document.getElementById('fst').value,
+    notes:document.getElementById('fnt').value.trim(),
+    date:eOid?(db.orders.find(x=>x.id===eOid)?.date||new Date().toISOString()):new Date().toISOString(),
+    deliveredAt:eOid?db.orders.find(x=>x.id===eOid)?.deliveredAt:null,
+  };
+  if(eOid){const i=db.orders.findIndex(x=>x.id===eOid);db.orders[i]=order;toast('Order updated.','✓');}
+  else{db.orders.push(order);toast('New order saved!','✓');}
+  closeM('m-order');eOid=null;save();rc2();
+}
+function doDelete(id){
+  if(!confirm('Delete this order?'))return;
+  db.orders=db.orders.filter(x=>x.id!==id);
+  db.moReqs=db.moReqs.filter(x=>x.orderId!==id);
+  toast('Order deleted.','🗑️');save();rc2();
+}
+function markDelivered(id){
+  const i=db.orders.findIndex(x=>x.id===id);
+  if(i>=0){db.orders[i].status='delivered';db.orders[i].deliveredAt=new Date().toISOString();toast('Marked as Delivered.','📦');save();}
+  rc2();
+}
+function markPaid(id){
+  const i=db.orders.findIndex(x=>x.id===id);
+  if(i>=0){db.orders[i].advance=db.orders[i].price;db.orders[i].baaki=0;toast('Marked as paid.','✓');save();}
+  rc2();
+}
+
+/* ══ MO ══ */
+function openMOModal(orderId){
+  moOid=orderId;
+  const o=db.orders.find(x=>x.id===orderId);if(!o)return;
+  document.getElementById('mo-info').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Patient</div><div style="font-weight:700;color:#e2e8f0;margin-top:2px">${o.name}</div></div>
+      <div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Phone</div><div style="font-weight:700;color:#e2e8f0;margin-top:2px">${o.phone}</div></div>
+      <div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Commission Due</div><div style="font-weight:900;color:#34d399;font-size:17px;margin-top:2px">${Rs(getComm(o.price))}</div></div>
+      <div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Delivered</div><div style="font-weight:600;color:#e2e8f0;margin-top:2px">${ds(o.deliveredAt||o.date)} days ago</div></div>
+    </div>`;
+  document.getElementById('mo-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('mo-amt').value=o.advance||o.price||0;
+  document.getElementById('mo-notes').value='';
+  const mi=document.getElementById('mo-img');if(mi){mi.src='';mi.style.display='none';}
+  const mf=document.getElementById('mo-file');if(mf)mf.value='';
+  openM('m-mo');
+}
+async function submitMO(){
+  const photo=null;
+  const o=db.orders.find(x=>x.id===moOid);
+  db.moReqs.push({id:Date.now(),orderId:moOid,opId:o.opId,patName:o.name,phone:o.phone,
+    moAmt:parseFloat(document.getElementById('mo-amt').value)||0,
+    moDate:document.getElementById('mo-date').value,
+    notes:document.getElementById('mo-notes').value.trim(),
+    photo,status:'pending',createdAt:new Date().toISOString()});
+  save();buildSB();closeM('m-mo');moOid=null;
+  toast('MO submitted for admin approval!','📤');rc2();
+}
+
+/* ══ APPROVAL ══ */
+function openApprModal(id){
+  apprId=id;
+  const r=db.moReqs.find(x=>x.id===id);if(!r)return;
+  const o=db.orders.find(x=>x.id===r.orderId)||{};
+  document.getElementById('appr-body').innerHTML=`
+    <div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:11px;padding:14px 16px;color:#fff;margin-bottom:13px;display:flex;gap:11px;align-items:center">
+      <span style="font-size:24px">📋</span>
+      <div><div style="font-size:14px;font-weight:800">${r.patName} — MO Review</div>
+      <div style="font-size:12px;opacity:.8;margin-top:2px">From ${opNm(r.opId)} · Commission: ${Rs(getComm(o.price||0))}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px">
+      <div style="background:#0a0f1a;border:1px solid #334155;border-radius:8px;padding:11px">
+        <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">MO Amount</div>
+        <div style="font-weight:900;font-size:18px;color:#34d399;margin-top:2px">${Rs(r.moAmt)}</div>
+        <div style="font-size:11px;color:#64748b">${r.moDate?new Date(r.moDate).toLocaleDateString():'—'}</div>
+      </div>
+      <div style="background:rgba(16,185,129,.08);border:1px solid rgba(52,211,153,.2);border-radius:8px;padding:11px">
+        <div style="font-size:9px;color:#10b981;font-weight:700;text-transform:uppercase">Commission to Pay</div>
+        <div style="font-weight:900;font-size:18px;color:#34d399;margin-top:2px">${Rs(getComm(o.price||0))}</div>
+        <div style="font-size:11px;color:#10b981">To: ${opNm(r.opId)}</div>
+      </div>
+    </div>
+    ${r.notes?`<div style="background:#0a0f1a;border:1px solid #334155;border-radius:8px;padding:11px;margin-bottom:11px;font-size:13px;color:#cbd5e1"><strong>Notes:</strong> ${r.notes}</div>`:''}
+    <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px">Money Order Photo</div>
+    ${r.photo?`<img src="${r.photo}" style="width:100%;max-height:260px;border-radius:11px;object-fit:contain;border:2px solid #334155;background:#0a0f1a">`:'<div style="background:#0a0f1a;border:1px dashed #334155;border-radius:9px;padding:28px;text-align:center;color:#64748b">No photo uploaded</div>'}`;
+  openM('m-appr');
+}
+function approveMO(){
+  const r=db.moReqs.find(x=>x.id===apprId);if(!r)return;
+  r.status='approved';r.approvedAt=new Date().toISOString();
+  save();closeM('m-appr');apprId=null;buildSB();
+  toast('MO approved! Commission paid to '+opNm(r.opId)+'.','✅');rc2();
+}
+function rejectMO(){
+  const r=db.moReqs.find(x=>x.id===apprId);if(!r)return;
+  r.status='rejected';r.rejectedAt=new Date().toISOString();
+  save();closeM('m-appr');apprId=null;buildSB();
+  toast('Money Order rejected.','❌',true);rc2();
+}
+
+/* ══ RETURN ══ */
+function openRetM(oid){
+  rOid=oid;const o=db.orders.find(x=>x.id===oid);if(!o)return;
+  document.getElementById('ret-info').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Patient</div><div style="font-weight:700;color:#e2e8f0;margin-top:2px">${o.name}</div></div>
+      <div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Advance Paid</div><div style="font-weight:800;color:#fb7185;margin-top:2px">${Rs(o.advance)}</div></div>
+    </div>`;
+  document.getElementById('rrs').value='';
+  document.getElementById('rdt').value=new Date().toISOString().slice(0,10);
+  document.getElementById('rrf').value=o.advance||0;
+  document.getElementById('rsk').value='yes';
+  document.getElementById('rnt').value='';
+  openM('m-ret');
+}
+function saveReturn(){
+  const reason=document.getElementById('rrs').value;
+  if(!reason){toast('Please select a return reason.','❌',true);return;}
+  const o=db.orders.find(x=>x.id===rOid);
+  db.returns.push({id:Date.now(),opId:o.opId,orderId:rOid,patName:o.name,phone:o.phone,
+    reason,refund:parseFloat(document.getElementById('rrf').value)||0,
+    stockBack:document.getElementById('rsk').value,
+    notes:document.getElementById('rnt').value.trim(),
+    date:document.getElementById('rdt').value,status:'pending'});
+  const oi=db.orders.findIndex(x=>x.id===rOid);if(oi>=0)db.orders[oi].status='returned';
+  closeM('m-ret');rOid=null;save();buildSB();toast('Return processed.','↩');rc2();
+}
+function resRet(id){const i=db.returns.findIndex(x=>x.id===id);if(i>=0){db.returns[i].status='resolved';toast('Resolved.','✓');save();rc2();}}
+function delRet(id){if(!confirm('Delete?'))return;db.returns=db.returns.filter(x=>x.id!==id);toast('Deleted.','🗑️');save();rc2();}
+
+/* ══ TEAM ══ */
+function openOpM(id){
+  eOpid=id||null;
+  document.getElementById('op-title').textContent=id?'Edit Member':'Add Team Member';
+  if(id){const o=db.operators.find(x=>x.id===id);document.getElementById('onm').value=o.name;document.getElementById('ocy').value=o.city;document.getElementById('opw2').value=o.password;document.getElementById('ocl').value=o.color;}
+  else{document.getElementById('onm').value='';document.getElementById('ocy').value='';document.getElementById('opw2').value='';}
+  openM('m-op');
+}
+function saveOp(){
+  const name=document.getElementById('onm').value.trim();const pw=document.getElementById('opw2').value.trim();
+  if(!name||!pw){toast('Name and Password required.','❌',true);return;}
+  const op={id:eOpid||Date.now(),name,city:document.getElementById('ocy').value.trim(),password:pw,color:document.getElementById('ocl').value};
+  if(eOpid){const i=db.operators.findIndex(x=>x.id===eOpid);db.operators[i]=op;toast('Updated.','✓');}
+  else{db.operators.push(op);toast('Member added.','✓');}
+  closeM('m-op');eOpid=null;save();fillSel();rc2();
+}
+function delOp(id){
+  if(!confirm('Delete this member?'))return;
+  db.operators=db.operators.filter(x=>x.id!==id);
+  db.orders=db.orders.filter(x=>x.opId!==id);
+  db.returns=db.returns.filter(x=>x.opId!==id);
+  db.moReqs=db.moReqs.filter(x=>x.opId!==id);
+  toast('Deleted.','🗑️');save();rc2();
+}
+
+/* ══ SYNC ══ */
+function openSyncModal(){
+  const isA=user&&user.role==='admin';
+  const sec=document.getElementById('sync-admin-sec');
+  if(sec)sec.style.display=isA?'block':'none';
+  if(isA){
+    const code=btoa(unescape(encodeURIComponent(JSON.stringify(db))));
+    const out=document.getElementById('sync-out');
+    if(out)out.value=code;
+  }
+  document.getElementById('sync-in').value='';
+  openM('m-sync');
+}
+function copySync(){
+  const out=document.getElementById('sync-out');if(!out)return;
+  navigator.clipboard.writeText(out.value).then(()=>toast('Code copied! Send via WhatsApp.','📋')).catch(()=>{out.select();document.execCommand('copy');toast('Code copied!','📋');});
+}
+function applySync(){
+  const code=document.getElementById('sync-in').value.trim();
+  if(!code){toast('Please paste the sync code first.','❌',true);return;}
+  try{
+    const data=JSON.parse(decodeURIComponent(escape(atob(code))));
+    if(!data.operators||!data.orders)throw new Error('Invalid');
+    db=data;save();buildSB();
+    const cur=document.querySelector('.page.on');if(cur)rp(cur.id.replace('p-',''),cur);
+    closeM('m-sync');toast('Data synced successfully!','✅');
+  }catch(e){toast('Invalid code. Try again.','❌',true);}
+}
+
+/* ══ MODAL ══ */
+function openM(id){document.getElementById(id).classList.add('on');}
+function closeM(id){document.getElementById(id).classList.remove('on');}
+
+/* ══ EVENT DELEGATION ══ */
+function handleAction(e){
+  const btn=e.target.closest('[data-action]');if(!btn)return;
+  e.preventDefault();e.stopPropagation();
+  const a=btn.dataset.action,id=parseInt(btn.dataset.id);
+  switch(a){
+    case 'del-order':doDelete(id);break;
+    case 'edit-order':openOrderM(id);break;
+    case 'ret-order':openRetM(id);break;
+    case 'delivered':markDelivered(id);break;
+    case 'submit-mo':openMOModal(id);break;
+    case 'mark-paid':markPaid(id);break;
+    case 'res-ret':resRet(id);break;
+    case 'del-ret':delRet(id);break;
+    case 'del-op':delOp(id);break;
+    case 'edit-op':openOpM(id);break;
+    case 'appr-mo':openApprModal(id);break;
+  }
+}
+
+/* ══ EXPORT ══ */
+function exportCSV(opOnly=false){
+  const ords=opOnly?myOrds():db.orders;
+  const rows=[['#','Team','Type','Patient','Phone','City','Condition','Price','Advance','Balance','Commission','Status','MO','Date']];
+  ords.forEach((o,i)=>{
+    const mo=db.moReqs.find(r=>r.orderId===o.id);
+    rows.push([i+1,opNm(o.opId),o.orderType==='registry'?'Registry':'VPL',o.name,o.phone,o.city||'',o.disease||'',o.price,o.advance,o.baaki,getComm(o.price)||'',o.status,o.orderType==='registry'?'N/A':mo?mo.status:'Not submitted',new Date(o.date).toLocaleDateString()]);
+  });
+  dlCSV(rows,`orders_${new Date().toISOString().slice(0,10)}.csv`);toast('Exported!','⬇');
+}
+function exportRetCSV(){
+  const rows=[['#','Team','Patient','Phone','Reason','Refund','Stock','Date','Status']];
+  db.returns.forEach((r,i)=>rows.push([i+1,opNm(r.opId),r.patName,r.phone,r.reason,r.refund,r.stockBack==='yes'?'Yes':'No',new Date(r.date).toLocaleDateString(),r.status]));
+  dlCSV(rows,'returns.csv');toast('Exported!','⬇');
+}
+function exportCommCSV(){
+  const all=buildComm(db.orders);
+  const rows=[['Team','Patient','Price','Commission','Type','Status','Date']];
+  all.forEach(r=>rows.push([opNm(r.opId),r.patName,r.price,r.comm,r.type,r.status,new Date(r.date).toLocaleDateString()]));
+  dlCSV(rows,'commissions.csv');toast('Exported!','⬇');
+}
+function dlCSV(rows,fn){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n')],{type:'text/csv;charset=utf-8;'}));
+  a.download=fn;a.click();
+}
+
+/* ══ TOAST ══ */
+function toast(msg,ic='✓',err=false){
+  const t=document.getElementById('toast');
+  document.getElementById('tic').textContent=ic;
+  document.getElementById('tmsg').textContent=msg;
+  t.className='toast'+(err?' err':'');
+  t.classList.add('on');setTimeout(()=>t.classList.remove('on'),3000);
+}
+
+/* ══ TAP ══ */
+function tap(el,fn){
+  if(!el)return;
+  el.addEventListener('click',fn);
+  el.addEventListener('touchend',e=>{e.preventDefault();fn(e);},{passive:false});
+}
+
+/* ══ INIT ══ */
+document.addEventListener('DOMContentLoaded',()=>{
+  fillSel();
+
+  tap(document.getElementById('lt-a'),()=>setTab('admin'));
+  tap(document.getElementById('lt-o'),()=>setTab('operator'));
+  tap(document.getElementById('lbtn'),doLogin);
+  tap(document.getElementById('bso'),doLogout);
+  tap(document.getElementById('ham'),toggleSB);
+  tap(document.getElementById('sov'),closeSB);
+  tap(document.getElementById('ot-v'),()=>setOT('vpl'));
+  tap(document.getElementById('ot-r'),()=>setOT('registry'));
+
+  document.getElementById('fpr').addEventListener('input',updComm);
+  document.getElementById('fad').addEventListener('input',updComm);
+
+  [['cls-order','cancel-order','m-order'],['cls-mo','cancel-mo','m-mo'],
+   ['cls-ret','cancel-ret','m-ret'],['cls-op','cancel-op','m-op'],
+   ['cls-appr','cancel-appr','m-appr'],['cls-sync','cancel-sync','m-sync']
+  ].forEach(([c,x,m])=>{tap(document.getElementById(c),()=>closeM(m));tap(document.getElementById(x),()=>closeM(m));});
+
+  tap(document.getElementById('save-order-btn'),saveOrder);
+  tap(document.getElementById('save-mo-btn'),submitMO);
+  tap(document.getElementById('save-ret-btn'),saveReturn);
+  tap(document.getElementById('save-op-btn'),saveOp);
+  tap(document.getElementById('approve-mo-btn'),approveMO);
+  tap(document.getElementById('reject-mo-btn'),rejectMO);
+  tap(document.getElementById('sync-btn'),openSyncModal);
+  tap(document.getElementById('copy-sync-btn'),copySync);
+  tap(document.getElementById('apply-sync-btn'),applySync);
+
+  document.addEventListener('click',handleAction);
+  document.addEventListener('touchend',e=>{const b=e.target.closest('[data-action]');if(b){e.preventDefault();handleAction(e);}},{passive:false});
+
+  document.querySelectorAll('.ov').forEach(o=>{o.addEventListener('click',function(e){if(e.target===this)closeM(this.id);});});
+
+  document.getElementById('apw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  document.getElementById('oppw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+});
+</script>
+</body>
+</html>
