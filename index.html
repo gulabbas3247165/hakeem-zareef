@@ -334,7 +334,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="phup">
       <div style="font-size:24px">📸</div>
       <div style="font-size:12px;color:#64748b;margin-top:3px">Photo of parcel before sending</div>
-      <input type="file" id="dispatch-file" accept="image/*" capture="environment">
+      <input type="file" id="dispatch-file" accept="image/*">
       <img id="dispatch-img" class="phprev">
     </div>
     <div id="pay-sec" style="display:none">
@@ -343,7 +343,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
       <div class="phup">
         <div style="font-size:24px">💳</div>
         <div style="font-size:12px;color:#64748b;margin-top:3px">Upload payment transfer screenshot</div>
-        <input type="file" id="pay-file" accept="image/*" capture="environment">
+        <input type="file" id="pay-file" accept="image/*">
         <img id="pay-img" class="phprev">
       </div>
     </div>
@@ -371,7 +371,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
     <div class="phup">
       <div style="font-size:24px">📷</div>
       <div style="font-size:12px;color:#64748b;margin-top:3px">Clear photo of Money Order form</div>
-      <input type="file" id="mo-file" accept="image/*" capture="environment">
+      <input type="file" id="mo-file" accept="image/*">
       <img id="mo-img" class="phprev">
     </div>
   </div>
@@ -1380,6 +1380,8 @@ async function saveOrder(){
   const name=document.getElementById('fn').value.trim();
   const phone=document.getElementById('fph').value.trim();
   if(!name||!phone){toast('Patient Name and Phone are required.','❌',true);return;}
+  const dispFile=document.getElementById('dispatch-file');
+  if(!eOid&&(!dispFile||!dispFile.files[0])){toast('Parcel photo required!','❌',true);return;}
   const opId=user.role==='operator'?user.op.id:(eOid?db.orders.find(x=>x.id===eOid)?.opId:db.operators[0].id);
   const dp=null,pp=null;
   const order={
