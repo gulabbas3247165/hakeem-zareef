@@ -597,11 +597,13 @@ async function loadFromCloud(){
       data.returns=data.returns||[];
       data.moReqs=data.moReqs||[];
       data.regPayments=data.regPayments||[];
-      // ONLY replace local data if cloud has MORE or EQUAL orders
-      // This prevents cloud from wiping freshly added local orders
-      const localCount=db.orders?db.orders.length:0;
-      const cloudCount=data.orders.length;
-      if(cloudCount>=localCount){
+      // Compare both orders AND payments to decide which is newer
+      const localOrders=db.orders?db.orders.length:0;
+      const localPayments=db.regPayments?db.regPayments.length:0;
+      const cloudOrders=data.orders.length;
+      const cloudPayments=data.regPayments.length;
+      // Only load from cloud if cloud has MORE or EQUAL data in BOTH
+      if(cloudOrders>=localOrders && cloudPayments>=localPayments){
         db=data;
         localStorage.setItem('hzd_db',JSON.stringify(db));
         return true;
@@ -1596,14 +1598,17 @@ async function saveRegPay(){
     note:document.getElementById('regpay-note').value.trim(),
     date:document.getElementById('regpay-date').value
   });
-  // Save locally immediately
+  // 1. Save locally FIRST
   localStorage.setItem('hzd_db',JSON.stringify(db));
   closeM('m-regpay');
-  toast('Payment save ho gayi!','💸');
-  rc2();
-  // Then sync to cloud
-  await syncToCloud();
   regPayOpId=null;
+  // 2. Sync to cloud and WAIT for it to complete
+  setSS('spin');
+  await syncToCloud();
+  setSS('ok');
+  // 3. Only THEN refresh UI
+  toast('Payment save ho gayi! ✅','💸');
+  rc2();
 }
 
 function exportRegistryCSV(){
