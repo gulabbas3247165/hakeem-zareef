@@ -515,19 +515,19 @@ tr:hover td{background:rgba(255,255,255,.02);}
 
 <script>
 /* ══ DATA ══ */
-const APWD='admin786';
+const APWD='YaAllahMadad@786786786';
 function defaultDB(){
   return{
     operators:[
-      {id:1,name:'Adeel',   city:'',password:'adeel786',  color:'#065f46'},
-      {id:2,name:'Afzal',   city:'',password:'afzal786',  color:'#1e3a8a'},
-      {id:3,name:'Ahmad',   city:'',password:'ahmad786',  color:'#5b21b6'},
-      {id:4,name:'Fahad',   city:'',password:'fahad786',  color:'#92400e'},
-      {id:5,name:'Faisal',  city:'',password:'faisal786', color:'#991b1b'},
-      {id:6,name:'Imran',   city:'',password:'imran786',  color:'#0e7490'},
-      {id:7,name:'Rizwan',  city:'',password:'rizwan786', color:'#b45309'},
-      {id:8,name:'Shahzad', city:'',password:'shahzad786',color:'#be185d'},
-      {id:9,name:'Zeeshan', city:'',password:'zeeshan786',color:'#134e4a'},
+      {id:1,name:'Adeel',   city:'',password:'adeel786',  color:'#065f46',accNum:'',bankName:'',accTitle:''},
+      {id:2,name:'Afzal',   city:'',password:'afzal786',  color:'#1e3a8a',accNum:'',bankName:'',accTitle:''},
+      {id:3,name:'Ahmad',   city:'',password:'ahmad786',  color:'#5b21b6',accNum:'',bankName:'',accTitle:''},
+      {id:4,name:'Fahad',   city:'',password:'fahad786',  color:'#92400e',accNum:'',bankName:'',accTitle:''},
+      {id:5,name:'Faisal',  city:'',password:'faisal786', color:'#991b1b',accNum:'',bankName:'',accTitle:''},
+      {id:6,name:'Imran',   city:'',password:'imran786',  color:'#0e7490',accNum:'',bankName:'',accTitle:''},
+      {id:7,name:'Rizwan',  city:'',password:'rizwan786', color:'#b45309',accNum:'',bankName:'',accTitle:''},
+      {id:8,name:'Shahzad', city:'',password:'shahzad786',color:'#be185d',accNum:'',bankName:'',accTitle:''},
+      {id:9,name:'Zeeshan', city:'',password:'zeeshan786',color:'#134e4a',accNum:'',bankName:'',accTitle:''},
     ],
     orders:[],returns:[],moReqs:[],regPayments:[]
   };
@@ -669,21 +669,24 @@ function getPhoto(fid){
     const inp=document.getElementById(fid);
     if(!inp||!inp.files[0])return res(null);
     const file=inp.files[0];
-    const img=new Image();
-    const url=URL.createObjectURL(file);
-    img.onload=()=>{
-      const canvas=document.createElement('canvas');
-      // Max 400px width for small size
-      const ratio=Math.min(1,400/img.width);
-      canvas.width=img.width*ratio;
-      canvas.height=img.height*ratio;
-      const ctx=canvas.getContext('2d');
-      ctx.drawImage(img,0,0,canvas.width,canvas.height);
-      URL.revokeObjectURL(url);
-      res(canvas.toDataURL('image/jpeg',0.5));
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        const max=600;
+        const ratio=Math.min(1,max/Math.max(img.width,img.height));
+        canvas.width=Math.round(img.width*ratio);
+        canvas.height=Math.round(img.height*ratio);
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        res(canvas.toDataURL('image/jpeg',0.6));
+      };
+      img.onerror=()=>res(null);
+      img.src=e.target.result;
     };
-    img.onerror=()=>res(null);
-    img.src=url;
+    reader.onerror=()=>res(null);
+    reader.readAsDataURL(file);
   });
 }
 
@@ -816,6 +819,7 @@ function buildSB(){
     <div class="ni" data-p="registry"><div class="ni-ic">📋</div>Registry / Advance</div>
     <div class="ng">Analytics</div>
     <div class="ni" data-p="performance"><div class="ni-ic">🏆</div>Performance</div>
+    <div class="ni" data-p="weekly"><div class="ni-ic">📈</div>Weekly Report</div>
     <div class="ng">Settings</div>
     <div class="ni" data-p="team"><div class="ni-ic">⚙️</div>Team Members</div>
   `:`
@@ -826,7 +830,8 @@ function buildSB(){
     <div class="ni" data-p="op-patients"><div class="ni-ic">🧑‍⚕️</div>My Patients</div>
     <div class="ni" data-p="op-returns"><div class="ni-ic">↩</div>Returns ${rb}</div>
     <div class="ni" data-p="op-commission"><div class="ni-ic">💵</div>My Commission</div>
-    <div class="ni" data-p="op-password"><div class="ni-ic">🔐</div>Change Password</div>
+    <div class="ni" data-p="op-mo"><div class="ni-ic">💵</div>VPL Payments</div>
+    <div class="ni" data-p="op-password"><div class="ni-ic">⚙️</div>Account Settings</div>
   `;
   document.querySelectorAll('.ni').forEach(el=>tap(el,()=>{nav(el.dataset.p);closeSB();}));
 }
@@ -841,7 +846,7 @@ function buildPages(){
     <div class="page" id="p-returns"></div><div class="page" id="p-mo-late"></div>
     <div class="page" id="p-mo-appr"></div><div class="page" id="p-commissions"></div>
     <div class="page" id="p-registry"></div>
-    <div class="page" id="p-performance"></div><div class="page" id="p-team"></div>
+    <div class="page" id="p-performance"></div><div class="page" id="p-weekly"></div><div class="page" id="p-team"></div>
   `:`
     <div class="page" id="p-op-home"></div><div class="page" id="p-op-today"></div><div class="page" id="p-op-orders"></div>
     <div class="page" id="p-op-patients"></div><div class="page" id="p-op-returns"></div>
@@ -876,6 +881,7 @@ function rp(id,pg){
     case 'performance':rPerf(pg);break;
     case 'registry':rRegistry(pg);break;
     case 'today':rToday(pg,'a');break;
+    case 'weekly':rWeekly(pg);break;
     case 'team':rTeam(pg);break;
     case 'op-home':rOpHome(pg);break;
     case 'op-orders':rOpOrds(pg);break;
@@ -883,6 +889,7 @@ function rp(id,pg){
     case 'op-returns':rRets(pg,'o');break;
     case 'op-commission':rComm(pg,'o');break;
     case 'op-today':rToday(pg,'o');break;
+    case 'op-mo':rOpMO(pg);break;
     case 'op-password':rOpPassword(pg);break;
   }
 }
@@ -899,7 +906,18 @@ function rDash(pg){
     return{...op,owed:c.reduce((s,x)=>s+x.comm,0),paid:c.filter(x=>x.status==='paid').reduce((s,x)=>s+x.comm,0)};
   }).filter(x=>x.owed>0).sort((a,b)=>b.owed-a.owed);
 
+  // Alert: operators with no orders today
+  const today=new Date().toDateString();
+  const todayOrds=db.orders.filter(x=>new Date(x.date).toDateString()===today);
+  const noOrderOps=db.operators.filter(op=>!todayOrds.find(x=>x.opId===op.id));
+
   pg.innerHTML=`
+  ${noOrderOps.length>0?`<div style="background:rgba(234,88,12,.1);border:1px solid rgba(251,146,60,.3);border-radius:11px;padding:13px 18px;margin-bottom:14px">
+    <div style="font-weight:700;color:#fb923c;font-size:13px;margin-bottom:8px">⚠️ Aaj Ke Orders Nahi Aaye — ${noOrderOps.length} Operator(s)</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      ${noOrderOps.map(op=>`<span style="background:${op.color}22;color:${op.color};border:1px solid ${op.color}44;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600">${op.name}</span>`).join('')}
+    </div>
+  </div>`:''}
   <div class="ph"><div><h2>Dashboard</h2><p>${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div></div>
   <div style="background:linear-gradient(135deg,#065f46,#059669);border-radius:14px;padding:22px 26px;margin-bottom:18px;position:relative;overflow:hidden">
     <div style="position:absolute;right:-15px;top:-15px;width:160px;height:160px;background:rgba(255,255,255,.04);border-radius:50%"></div>
@@ -1429,27 +1447,63 @@ function loadDayReport(m){
 function toggleDayDetail(safeDate){}
 
 function rOpPassword(pg){
-  pg.innerHTML=`
-  <div class="ph"><div><h2>🔐 Password Change Karo</h2><p>Apna login password update karo</p></div></div>
-  <div class="card cbody" style="max-width:420px">
-    <div class="f" style="margin-bottom:14px">
-      <label>Purana Password</label>
-      <input type="password" id="pw-old" placeholder="Purana password daalo" autocomplete="current-password">
-    </div>
-    <div class="f" style="margin-bottom:14px">
-      <label>Naya Password</label>
-      <input type="password" id="pw-new" placeholder="Naya password daalo" autocomplete="new-password">
-    </div>
-    <div class="f" style="margin-bottom:20px">
-      <label>Naya Password Confirm</label>
-      <input type="password" id="pw-confirm" placeholder="Dobara likho" autocomplete="new-password">
-    </div>
-    <div id="pw-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px"></div>
-    <button class="btn bp2" style="width:100%" id="pw-save-btn">🔐 Password Change Karo</button>
-  </div>`;
+  const op=db.operators.find(x=>x.id===user.op.id)||{};
+  pg.innerHTML=
+    '<div class="ph"><div><h2>⚙️ Account Settings</h2><p>Password aur bank account update karo</p></div></div>'+
 
-  // Use event listener instead of onclick
-  document.getElementById('pw-save-btn').addEventListener('click', changePassword);
+    '<div class="card" style="margin-bottom:14px">'+
+    '<div class="ch2"><span class="ct">🔐 Password Change</span></div>'+
+    '<div class="cbody">'+
+    '<div class="fg">'+
+    '<div class="f full"><label>Purana Password</label><input type="password" id="pw-old" placeholder="Purana password" autocomplete="current-password"></div>'+
+    '<div class="f"><label>Naya Password</label><input type="password" id="pw-new" placeholder="Naya password" autocomplete="new-password"></div>'+
+    '<div class="f"><label>Confirm Naya Password</label><input type="password" id="pw-confirm" placeholder="Dobara likho" autocomplete="new-password"></div>'+
+    '</div>'+
+    '<div id="pw-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin:12px 0"></div>'+
+    '<button class="btn bp2" style="margin-top:4px" id="pw-save-btn">🔐 Password Change Karo</button>'+
+    '</div></div>'+
+
+    '<div class="card">'+
+    '<div class="ch2"><span class="ct">🏦 Bank Account Details</span></div>'+
+    '<div class="cbody">'+
+    '<div style="font-size:12px;color:#64748b;margin-bottom:14px">Yeh details admin ko payment bhejne ke liye zaroori hain.</div>'+
+    '<div class="fg">'+
+    '<div class="f full"><label>Account Number / Phone Number</label><input type="text" id="acc-num" placeholder="e.g. 03001234567" value="'+(op.accNum||'')+'"></div>'+
+    '<div class="f"><label>Bank / Service</label><select id="acc-bank"><option value="">Select karo</option><option value="EasyPaisa" '+(op.bankName==='EasyPaisa'?'selected':'')+'>EasyPaisa</option><option value="JazzCash" '+(op.bankName==='JazzCash'?'selected':'')+'>JazzCash</option><option value="HBL" '+(op.bankName==='HBL'?'selected':'')+'>HBL</option><option value="Meezan Bank" '+(op.bankName==='Meezan Bank'?'selected':'')+'>Meezan Bank</option><option value="UBL" '+(op.bankName==='UBL'?'selected':'')+'>UBL</option><option value="Other" '+(op.bankName==='Other'?'selected':'')+'>Other</option></select></div>'+
+    '<div class="f"><label>Account Title (Owner Name)</label><input type="text" id="acc-title" placeholder="Account holder ka naam" value="'+(op.accTitle||'')+'"></div>'+
+    '</div>'+
+    '<div id="acc-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin:12px 0"></div>'+
+    '<button class="btn bp2" style="margin-top:4px" id="acc-save-btn">💾 Account Save Karo</button>'+
+    '</div></div>';
+
+  setTimeout(()=>{
+    const pwBtn=document.getElementById('pw-save-btn');
+    const accBtn=document.getElementById('acc-save-btn');
+    if(pwBtn)pwBtn.addEventListener('click',changePassword);
+    if(accBtn)accBtn.addEventListener('click',saveAccountInfo);
+  },50);
+}
+
+function saveAccountInfo(){
+  const accNum=document.getElementById('acc-num')?.value.trim()||'';
+  const bankName=document.getElementById('acc-bank')?.value||'';
+  const accTitle=document.getElementById('acc-title')?.value.trim()||'';
+  const msg=document.getElementById('acc-msg');
+  if(!accNum||!bankName||!accTitle){
+    if(msg){msg.style.display='block';msg.style.background='rgba(225,29,72,.12)';msg.style.color='#fb7185';msg.style.border='1px solid rgba(251,113,133,.3)';msg.textContent='Sab fields bharain!';}
+    return;
+  }
+  const i=db.operators.findIndex(x=>x.id===user.op.id);
+  if(i>=0){
+    db.operators[i].accNum=accNum;
+    db.operators[i].bankName=bankName;
+    db.operators[i].accTitle=accTitle;
+    user.op.accNum=accNum;
+    user.op.bankName=bankName;
+    user.op.accTitle=accTitle;
+    save();
+    if(msg){msg.style.display='block';msg.style.background='rgba(16,185,129,.12)';msg.style.color='#34d399';msg.style.border='1px solid rgba(52,211,153,.3)';msg.textContent='✅ Account details save ho gayi!';}
+  }
 }
 
 function changePassword(){
@@ -1686,12 +1740,161 @@ function exportOperatorReport(){
   toast('Report download ho rahi hai!','⬇');
 }
 
+function rWeekly(pg){
+  // Get current week (Sunday to Saturday)
+  const now=new Date();
+  const dayOfWeek=now.getDay();
+  const weekStart=new Date(now);
+  weekStart.setDate(now.getDate()-dayOfWeek);
+  weekStart.setHours(0,0,0,0);
+  const weekEnd=new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate()+6);
+  weekEnd.setHours(23,59,59,999);
+
+  // Build weeks list (last 8 weeks)
+  const weeks=[];
+  for(let i=0;i<8;i++){
+    const ws=new Date(weekStart);
+    ws.setDate(weekStart.getDate()-(i*7));
+    const we=new Date(ws);
+    we.setDate(ws.getDate()+6);
+    weeks.push({start:ws,end:we,label:ws.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' – '+we.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})});
+  }
+
+  function getWeekData(ws,we){
+    const ords=db.orders.filter(o=>{const d=new Date(o.date);return d>=ws&&d<=we;});
+    const rets=db.returns.filter(o=>{const d=new Date(o.date);return d>=ws&&d<=we;});
+    return{ords,rets,
+      vpl:ords.filter(o=>o.orderType!=='registry'),
+      reg:ords.filter(o=>o.orderType==='registry'),
+      adv:ords.reduce((s,o)=>s+o.advance,0),
+      comm:ords.reduce((s,o)=>s+getComm(o.price),0)
+    };
+  }
+
+  const curWeek=getWeekData(weeks[0].start,weeks[0].end);
+
+  // Per operator this week
+  let opRows='';
+  db.operators.forEach(op=>{
+    const opOrds=curWeek.ords.filter(o=>o.opId===op.id);
+    const opRets=curWeek.rets.filter(o=>o.opId===op.id).length;
+    const opVPL=opOrds.filter(o=>o.orderType!=='registry').length;
+    const opReg=opOrds.filter(o=>o.orderType==='registry').length;
+    const opComm=opOrds.reduce((s,o)=>s+getComm(o.price),0);
+
+    // VPL paid this week
+    const vplPaidWk=db.moReqs.filter(r=>{
+      if(r.opId!==op.id||r.status!=='approved')return false;
+      const d=new Date(r.approvedAt||r.createdAt);
+      return d>=weeks[0].start&&d<=weeks[0].end;
+    }).reduce((s,r)=>{const o=db.orders.find(x=>x.id===r.orderId);return s+(o?getComm(o.price):0);},0);
+
+    // Registry paid this week
+    const regPaidWk=(db.regPayments||[]).filter(p=>{
+      if(p.opId!==op.id)return false;
+      const d=new Date(p.date);
+      return d>=weeks[0].start&&d<=weeks[0].end;
+    }).reduce((s,p)=>s+p.amount,0);
+
+    if(opOrds.length===0&&opRets===0)return;
+    opRows+='<tr>'+
+      '<td style="padding:10px 12px">'+opTag(op.id)+'</td>'+
+      '<td style="padding:10px 12px;text-align:center"><span class="bdg bc">'+opVPL+'</span></td>'+
+      '<td style="padding:10px 12px;text-align:center"><span class="bdg bv">'+opReg+'</span></td>'+
+      '<td style="padding:10px 12px;text-align:center;font-weight:800;color:#e2e8f0">'+opOrds.length+'</td>'+
+      '<td style="padding:10px 12px;text-align:center"><span class="bdg '+(opRets>0?'brb':'bd')+'">'+opRets+'</span></td>'+
+      '<td style="padding:10px 12px;color:#34d399;font-weight:700">'+Rs(opComm)+'</td>'+
+      '<td style="padding:10px 12px;color:#34d399;font-weight:800">'+Rs(vplPaidWk)+'</td>'+
+      '<td style="padding:10px 12px;color:#a78bfa;font-weight:800">'+Rs(regPaidWk)+'</td>'+
+    '</tr>';
+  });
+
+  // Past weeks summary
+  let pastRows='';
+  weeks.slice(1).forEach((wk,i)=>{
+    const wd=getWeekData(wk.start,wk.end);
+    if(wd.ords.length===0)return;
+    pastRows+='<tr>'+
+      '<td style="padding:9px 12px;font-weight:600;color:#e2e8f0">'+wk.label+'</td>'+
+      '<td style="padding:9px 12px;text-align:center"><span class="bdg bc">'+wd.vpl.length+'</span></td>'+
+      '<td style="padding:9px 12px;text-align:center"><span class="bdg bv">'+wd.reg.length+'</span></td>'+
+      '<td style="padding:9px 12px;text-align:center;font-weight:800;color:#e2e8f0">'+wd.ords.length+'</td>'+
+      '<td style="padding:9px 12px;text-align:center;color:#fb923c;font-weight:700">'+wd.rets.length+'</td>'+
+      '<td style="padding:9px 12px;color:#34d399;font-weight:700">'+Rs(wd.adv)+'</td>'+
+      '<td style="padding:9px 12px;color:#fbbf24;font-weight:800">'+Rs(wd.comm)+'</td>'+
+    '</tr>';
+  });
+
+  pg.innerHTML=
+    '<div class="ph"><div><h2>📈 Weekly Report</h2><p>Is hafte aur pichle hafton ka record</p></div>'+
+    '<div class="pha"><button class="btn bamb bsm" onclick="exportWeeklyCSV()">⬇ Export</button></div></div>'+
+
+    '<div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:14px;padding:20px 24px;margin-bottom:18px;position:relative;overflow:hidden">'+
+    '<div style="position:absolute;right:-10px;top:-10px;width:130px;height:130px;background:rgba(255,255,255,.04);border-radius:50%"></div>'+
+    '<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.9px;margin-bottom:4px">Is Hafte Ka Total</div>'+
+    '<div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:8px">'+weeks[0].label+'</div>'+
+    '<div style="display:flex;gap:18px;flex-wrap:wrap">'+
+    '<div style="background:rgba(255,255,255,.1);padding:10px 16px;border-radius:9px;text-align:center"><div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase">Total</div><div style="font-size:24px;font-weight:900;color:#fff">'+curWeek.ords.length+'</div></div>'+
+    '<div style="background:rgba(255,255,255,.1);padding:10px 16px;border-radius:9px;text-align:center"><div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase">VPL</div><div style="font-size:24px;font-weight:900;color:#93c5fd">'+curWeek.vpl.length+'</div></div>'+
+    '<div style="background:rgba(255,255,255,.1);padding:10px 16px;border-radius:9px;text-align:center"><div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase">Registry</div><div style="font-size:24px;font-weight:900;color:#c4b5fd">'+curWeek.reg.length+'</div></div>'+
+    '<div style="background:rgba(255,255,255,.1);padding:10px 16px;border-radius:9px;text-align:center"><div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase">Returns</div><div style="font-size:24px;font-weight:900;color:#fca5a5">'+curWeek.rets.length+'</div></div>'+
+    '<div style="background:rgba(255,255,255,.1);padding:10px 16px;border-radius:9px;text-align:center"><div style="font-size:9px;color:rgba(255,255,255,.6);text-transform:uppercase">Commission</div><div style="font-size:20px;font-weight:900;color:#6ee7b7">'+Rs(curWeek.comm)+'</div></div>'+
+    '</div></div>'+
+
+    '<div class="card" style="margin-bottom:14px">'+
+    '<div class="ch2"><span class="ct">Is Hafte — Operator Breakdown</span><span style="font-size:11px;color:#64748b">'+weeks[0].label+'</span></div>'+
+    (opRows?
+    '<div class="tw"><table style="width:100%;border-collapse:collapse">'+
+    '<thead><tr>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Operator</th>'+
+    '<th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">VPL</th>'+
+    '<th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Registry</th>'+
+    '<th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Total</th>'+
+    '<th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Returns</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Commission</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">VPL Paid</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Reg Paid</th>'+
+    '</tr></thead><tbody>'+opRows+'</tbody></table></div>':
+    '<div class="empty"><div class="empty-ic">📭</div><p>Is hafte koi orders nahi.</p></div>')+
+    '</div>'+
+
+    (pastRows?
+    '<div class="card">'+
+    '<div class="ch2"><span class="ct">Pichle Hafton Ka Record</span></div>'+
+    '<div class="tw"><table style="width:100%;border-collapse:collapse">'+
+    '<thead><tr>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Week</th>'+
+    '<th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">VPL</th>'+
+    '<th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Registry</th>'+
+    '<th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Total</th>'+
+    '<th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Returns</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Advance</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Commission</th>'+
+    '</tr></thead><tbody>'+pastRows+'</tbody></table></div></div>':'');
+}
+
+function exportWeeklyCSV(){
+  const now=new Date();
+  const ws=new Date(now);ws.setDate(now.getDate()-now.getDay());ws.setHours(0,0,0,0);
+  const we=new Date(ws);we.setDate(ws.getDate()+6);we.setHours(23,59,59,999);
+  const ords=db.orders.filter(o=>{const d=new Date(o.date);return d>=ws&&d<=we;});
+  const rows=[['Weekly Report — '+ws.toLocaleDateString()+' to '+we.toLocaleDateString()],[''],
+    ['Operator','VPL','Registry','Total Orders','Returns','Commission']];
+  db.operators.forEach(op=>{
+    const o=ords.filter(x=>x.opId===op.id);
+    const r=db.returns.filter(x=>x.opId===op.id&&new Date(x.date)>=ws&&new Date(x.date)<=we).length;
+    rows.push([op.name,o.filter(x=>x.orderType!=='registry').length,o.filter(x=>x.orderType==='registry').length,o.length,r,o.reduce((s,x)=>s+getComm(x.price),0)]);
+  });
+  dlCSV(rows,'weekly_report_'+ws.toISOString().slice(0,10)+'.csv');toast('Weekly report download ho rahi hai!','⬇');
+}
+
 function rTeam(pg){
   pg.innerHTML=`
   <div class="ph"><div><h2>Team Members</h2></div>
   <div class="pha"><button class="btn bp2 bsm" onclick="openOpM()">+ Add Member</button></div></div>
   <div class="card"><div class="tw"><table>
-  <thead><tr><th>#</th><th>Member</th><th>City</th><th>Password</th><th>Orders</th><th>Returns</th><th>Revenue</th><th>Comm Paid</th><th>Actions</th></tr></thead>
+  <thead><tr><th>#</th><th>Member</th><th>City</th><th>Password</th><th>Bank</th><th>Account #</th><th>Orders</th><th>Returns</th><th>Revenue</th><th>Comm Paid</th><th>Actions</th></tr></thead>
   <tbody>${db.operators.map((o,i)=>{
     const ords=db.orders.filter(x=>x.opId===o.id);
     const rets=db.returns.filter(x=>x.opId===o.id).length;
@@ -1700,6 +1903,8 @@ function rTeam(pg){
       <td><div style="width:34px;height:34px;border-radius:8px;background:${o.color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px">${o.name.slice(0,2)}</div></td>
       <td><strong style="color:#e2e8f0">${o.name}</strong></td><td>${o.city||'—'}</td>
       <td><code style="background:#0a0f1a;padding:2px 7px;border-radius:5px;font-size:12px;border:1px solid #334155;color:#94a3b8">${o.password}</code></td>
+      <td style="font-size:12px;color:#a78bfa;font-weight:600">${o.bankName||'—'}</td>
+      <td style="font-size:12px;color:#60a5fa">${o.accNum?o.accNum+(o.accTitle?' ('+o.accTitle+')':''):'—'}</td>
       <td><span class="bdg bd">${ords.length}</span></td>
       <td>${rets>0?`<span class="bdg brb">${rets}</span>`:'0'}</td>
       <td style="color:#34d399;font-weight:700">${Rs(ords.reduce((s,x)=>s+x.advance,0))}</td>
@@ -1709,6 +1914,97 @@ function rTeam(pg){
         <button class="btn bxs brd" data-action="del-op" data-id="${o.id}">🗑</button>
       </div></td>
     </tr>`;}).join('')}</tbody></table></div></div>`;
+}
+
+function rOpMO(pg){
+  const op=user.op;
+  const myOrds=db.orders.filter(o=>o.opId===op.id&&o.orderType!=='registry');
+  const delivered=myOrds.filter(o=>o.status==='delivered');
+
+  // Orders with MO submitted
+  const withMO=delivered.filter(o=>db.moReqs.find(r=>r.orderId===o.id));
+  const pendingMO=delivered.filter(o=>!db.moReqs.find(r=>r.orderId===o.id));
+  const approvedMO=db.moReqs.filter(r=>r.opId===op.id&&r.status==='approved');
+  const pendingReviewMO=db.moReqs.filter(r=>r.opId===op.id&&r.status==='pending');
+
+  // Commission calculations
+  const totalCommEarnable=delivered.reduce((s,o)=>s+getComm(o.price),0);
+  const commPaid=approvedMO.reduce((s,r)=>{
+    const o=db.orders.find(x=>x.id===r.orderId);
+    return s+(o?getComm(o.price):0);
+  },0);
+  const commPending=totalCommEarnable-commPaid;
+  const retPenalty=db.returns.filter(r=>r.opId===op.id).length*RETURN_PENALTY;
+
+  // Build pending MO rows
+  let pendRows='';
+  pendingMO.forEach((o,i)=>{
+    const days=Math.floor((Date.now()-new Date(o.deliveredAt||o.date))/86400000);
+    pendRows+='<tr class="'+(days>=7?'late-row':'')+'">'+
+      '<td style="padding:9px 12px;font-size:11px;color:#64748b">'+(i+1)+'</td>'+
+      '<td style="padding:9px 12px"><strong style="color:#e2e8f0">'+o.name+'</strong><div style="font-size:11px;color:#64748b">'+o.phone+'</div></td>'+
+      '<td style="padding:9px 12px;font-weight:700;color:#e2e8f0">'+Rs(o.price)+'</td>'+
+      '<td style="padding:9px 12px;color:#34d399;font-weight:800">'+Rs(getComm(o.price))+'</td>'+
+      '<td style="padding:9px 12px"><span style="'+(days>=7?'color:#fb7185;font-weight:700':'color:#fbbf24;font-weight:600')+'">'+days+' din</span></td>'+
+      '<td style="padding:9px 12px"><button class="btn bxs bgold" data-action="submit-mo" data-id="'+o.id+'">💵 MO Submit</button></td>'+
+    '</tr>';
+  });
+
+  // Build approved MO rows
+  let appRows='';
+  approvedMO.forEach((r,i)=>{
+    const o=db.orders.find(x=>x.id===r.orderId)||{};
+    appRows+='<tr>'+
+      '<td style="padding:9px 12px;font-size:11px;color:#64748b">'+(i+1)+'</td>'+
+      '<td style="padding:9px 12px"><strong style="color:#e2e8f0">'+r.patName+'</strong></td>'+
+      '<td style="padding:9px 12px;color:#34d399;font-weight:800">'+Rs(getComm(o.price||0))+'</td>'+
+      '<td style="padding:9px 12px"><span class="bdg bd">✓ Paid</span></td>'+
+      '<td style="padding:9px 12px;font-size:11px;color:#64748b">'+new Date(r.approvedAt||r.createdAt).toLocaleDateString()+'</td>'+
+    '</tr>';
+  });
+
+  pg.innerHTML=
+    '<div class="ph"><div><h2>💵 VPL Payments</h2><p>Money Order status aur commission tracker</p></div></div>'+
+
+    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px">'+
+    '<div style="background:linear-gradient(135deg,#065f46,#059669);border-radius:12px;padding:16px 18px;color:#fff">'+
+    '<div style="font-size:10px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.7px">Commission Milegi</div>'+
+    '<div style="font-size:28px;font-weight:900;margin:5px 0">'+Rs(commPending)+'</div>'+
+    '<div style="font-size:12px;opacity:.8">'+pendingMO.length+' orders MO pending</div>'+
+    '</div>'+
+    '<div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px 18px">'+
+    '<div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.7px">Commission Mil Gayi</div>'+
+    '<div style="font-size:28px;font-weight:900;color:#34d399;margin:5px 0">'+Rs(commPaid)+'</div>'+
+    '<div style="font-size:12px;color:#64748b">'+approvedMO.length+' payments approved</div>'+
+    '</div>'+
+    '</div>'+
+
+    (retPenalty>0?'<div style="background:rgba(234,88,12,.1);border:1px solid rgba(251,146,60,.3);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">⚠️</span><div><div style="font-weight:700;color:#fb923c">Return Penalty</div><div style="font-size:12px;color:#94a3b8;margin-top:2px">'+db.returns.filter(r=>r.opId===op.id).length+' returns × Rs 130 = <strong style="color:#fb923c">-'+Rs(retPenalty)+'</strong> commission se cut hoga</div></div></div>':'')+
+
+    (pendingReviewMO.length>0?'<div style="background:rgba(37,99,235,.1);border:1px solid rgba(96,165,250,.25);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px"><span style="font-size:20px">🕐</span><div><div style="font-weight:700;color:#60a5fa">'+pendingReviewMO.length+' MO Review Mein</div><div style="font-size:12px;color:#94a3b8;margin-top:2px">Admin approve karega jaldi.</div></div></div>':'')+
+
+    (pendingMO.length>0?
+    '<div class="card" style="margin-bottom:14px">'+
+    '<div class="ch2"><span class="ct" style="color:#fbbf24">⏳ MO Pending — '+pendingMO.length+' Orders</span></div>'+
+    '<div class="tw"><table style="width:100%;border-collapse:collapse">'+
+    '<thead><tr><th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">#</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Patient</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Price</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Commission</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Delivery</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Action</th></tr></thead>'+
+    '<tbody>'+pendRows+'</tbody></table></div></div>':'<div class="card cbody" style="margin-bottom:14px"><div class="empty"><div class="empty-ic">✅</div><p>Sab MO submit ho gaye!</p></div></div>')+
+
+    (approvedMO.length>0?
+    '<div class="card">'+
+    '<div class="ch2"><span class="ct" style="color:#34d399">✅ Commission Paid — '+approvedMO.length+' Orders</span></div>'+
+    '<div class="tw"><table style="width:100%;border-collapse:collapse">'+
+    '<thead><tr><th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">#</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Patient</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Commission</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Status</th>'+
+    '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Date</th></tr></thead>'+
+    '<tbody>'+appRows+'</tbody></table></div></div>':'');
 }
 
 function buildOpSummary(opId,ords,myC){
@@ -1897,7 +2193,12 @@ async function saveOrder(){
   const dispFile=document.getElementById('dispatch-file');
   if(!eOid&&(!dispFile||!dispFile.files[0])){toast('Parcel photo required!','❌',true);return;}
   const opId=user.role==='operator'?user.op.id:(eOid?db.orders.find(x=>x.id===eOid)?.opId:db.operators[0].id);
-  const dp=null,pp=null;
+  let dp=eOid?(db.orders.find(x=>x.id===eOid)?.dispatchPhoto||null):null;
+  let pp=eOid?(db.orders.find(x=>x.id===eOid)?.paymentPhoto||null):null;
+  const newDp=await getPhoto('dispatch-file');
+  const newPp=await getPhoto('pay-file');
+  if(newDp)dp=newDp;
+  if(newPp)pp=newPp;
   const order={
     id:eOid||Date.now(),opId,name,phone,
     city:document.getElementById('fct').value.trim(),
