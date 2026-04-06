@@ -2075,6 +2075,160 @@ function exportCommCSV(){
   dlCSV(rows,'commissions.csv');toast('Exported!','⬇');
 }
 
+function rTeam(pg){
+  pg.innerHTML=`
+  <div class="ph"><div><h2>Team Members</h2></div>
+  <div class="pha"><button class="btn bp2 bsm" onclick="openOpM()">+ Add Member</button></div></div>
+  <div class="card"><div class="tw"><table>
+  <thead><tr><th>#</th><th>Member</th><th>City</th><th>Password</th><th>Bank</th><th>Account #</th><th>Orders</th><th>Returns</th><th>Revenue</th><th>Comm Paid</th><th>Actions</th></tr></thead>
+  <tbody>${db.operators.map((o,i)=>{
+    const ords=db.orders.filter(x=>x.opId===o.id);
+    const rets=db.returns.filter(x=>x.opId===o.id).length;
+    const regPaid=(db.regPayments||[]).filter(p=>p.opId===o.id).reduce((s,p)=>s+p.amount,0);
+    const vplPaid=(db.vplPayments||[]).filter(p=>p.opId===o.id).reduce((s,p)=>s+p.amount,0);
+    const cp=regPaid+vplPaid;
+    return '<tr>'+
+      '<td><div style="width:34px;height:34px;border-radius:8px;background:'+o.color+';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px">'+o.name.slice(0,2)+'</div></td>'+
+      '<td><strong style="color:#e2e8f0">'+o.name+'</strong></td>'+
+      '<td>'+(o.city||'—')+'</td>'+
+      '<td><code style="background:#0a0f1a;padding:2px 7px;border-radius:5px;font-size:12px;border:1px solid #334155;color:#94a3b8">'+o.password+'</code></td>'+
+      '<td style="font-size:12px;color:#a78bfa;font-weight:600">'+(o.bankName||'—')+'</td>'+
+      '<td style="font-size:12px;color:#60a5fa">'+(o.accNum?(o.accNum+(o.accTitle?' ('+o.accTitle+')':'')):'—')+'</td>'+
+      '<td><span class="bdg bd">'+ords.length+'</span></td>'+
+      '<td>'+(rets>0?'<span class="bdg brb">'+rets+'</span>':'0')+'</td>'+
+      '<td style="color:#34d399;font-weight:700">'+Rs(ords.reduce((s,x)=>s+x.advance,0))+'</td>'+
+      '<td style="color:#34d399;font-weight:800">'+Rs(cp)+'</td>'+
+      '<td><div style="display:flex;gap:4px">'+
+        '<button class="btn bxs bout" data-action="edit-op" data-id="'+o.id+'">Edit</button>'+
+        '<button class="btn bxs brd" data-action="del-op" data-id="'+o.id+'">🗑</button>'+
+      '</div></td>'+
+    '</tr>';
+  }).join('')}</tbody></table></div></div>`;
+}
+
+function rRegistry(pg){
+  if(!db.regPayments)db.regPayments=[];
+  const regOrders=db.orders.filter(o=>o.orderType==='registry');
+  const total=regOrders.reduce((s,o)=>s+o.advance,0);
+  const byOp=db.operators.map(op=>{
+    const ops=regOrders.filter(o=>o.opId===op.id);
+    const totalComm=ops.reduce((s,o)=>s+getComm(o.price),0);
+    const paid=db.regPayments.filter(p=>p.opId===op.id).reduce((s,p)=>s+p.amount,0);
+    const pending=Math.max(0,totalComm-paid);
+    return{...op,count:ops.length,totalAdv:ops.reduce((s,o)=>s+o.advance,0),totalComm,paid,pending,orders:ops};
+  }).filter(x=>x.count>0).sort((a,b)=>b.totalAdv-a.totalAdv);
+
+  const totalComm=byOp.reduce((s,o)=>s+o.totalComm,0);
+  const totalPaid=byOp.reduce((s,o)=>s+o.paid,0);
+  const totalPending=byOp.reduce((s,o)=>s+o.pending,0);
+
+  let opHTML='';
+  byOp.forEach(op=>{
+    let rows='';
+    op.orders.slice().reverse().forEach((o,i)=>{
+      rows+='<tr>'+
+        '<td style="padding:9px 12px;font-size:11px;color:#64748b">'+(i+1)+'</td>'+
+        '<td style="padding:9px 12px"><strong style="color:#e2e8f0">'+o.name+'</strong></td>'+
+        '<td style="padding:9px 12px"><a href="tel:'+o.phone+'" style="color:#60a5fa;text-decoration:none;font-weight:600">'+o.phone+'</a></td>'+
+        '<td style="padding:9px 12px">'+(o.city||'—')+'</td>'+
+        '<td style="padding:9px 12px;font-weight:700;color:#e2e8f0">'+Rs(o.price)+'</td>'+
+        '<td style="padding:9px 12px;color:#34d399;font-weight:700">'+Rs(o.advance)+'</td>'+
+        '<td style="padding:9px 12px;color:#34d399;font-weight:800">'+(getComm(o.price)?Rs(getComm(o.price)):'—')+'</td>'+
+        '<td style="padding:9px 12px">'+sbdg(o.status)+'</td>'+
+        '<td style="padding:9px 12px;font-size:11px;color:#64748b">'+new Date(o.date).toLocaleDateString()+'</td>'+
+      '</tr>';
+    });
+
+    const opPayHist=db.regPayments.filter(p=>p.opId===op.id);
+    let payRows='';
+    opPayHist.forEach((p,i)=>{
+      payRows+='<tr>'+
+        '<td style="padding:8px 10px;font-size:11px;color:#64748b">'+(i+1)+'</td>'+
+        '<td style="padding:8px 10px;color:#34d399;font-weight:700">'+Rs(p.amount)+'</td>'+
+        '<td style="padding:8px 10px;font-size:12px;color:#94a3b8">'+(p.note||'—')+'</td>'+
+        '<td style="padding:8px 10px;font-size:11px;color:#64748b">'+new Date(p.date).toLocaleDateString()+'</td>'+
+        '<td style="padding:8px 10px"><button class="btn bxs brd" data-action="del-regpay" data-id="'+p.id+'">🗑</button></td>'+
+      '</tr>';
+    });
+
+    opHTML+='<div class="card" style="margin-bottom:14px">'+
+      '<div class="ch2">'+
+        '<div style="display:flex;align-items:center;gap:10px">'+
+          '<div style="width:36px;height:36px;border-radius:9px;background:'+op.color+';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px">'+op.name.slice(0,2)+'</div>'+
+          '<div>'+
+            '<div style="font-weight:700;color:#f8fafc;font-size:14px">'+op.name+'</div>'+
+            '<div style="font-size:11px;color:#64748b;margin-top:1px">'+op.count+' orders · '+Rs(op.totalAdv)+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+
+          '<div style="background:#0a0f1a;padding:7px 11px;border-radius:8px;border:1px solid #334155;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Banti</div>'+
+            '<div style="font-size:15px;font-weight:900;color:#fbbf24">'+Rs(op.totalComm)+'</div>'+
+          '</div>'+
+          '<div style="background:#0a0f1a;padding:7px 11px;border-radius:8px;border:1px solid #334155;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Di</div>'+
+            '<div style="font-size:15px;font-weight:900;color:#34d399">'+Rs(op.paid)+'</div>'+
+          '</div>'+
+          '<div style="background:#0a0f1a;padding:7px 11px;border-radius:8px;border:1px solid '+(op.pending>0?'rgba(251,113,133,.3)':'#334155')+'">'+
+            '<div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Baaki</div>'+
+            '<div style="font-size:15px;font-weight:900;color:'+(op.pending>0?'#fb7185':'#34d399')+'">'+Rs(op.pending)+'</div>'+
+          '</div>'+
+          '<button class="btn bp2 bsm" data-action="pay-reg" data-id="'+op.id+'" style="font-size:12px">💸 Payment Di</button>'+
+        '</div>'+
+      '</div>'+
+      '<div style="padding:14px 18px;border-bottom:1px solid #334155">'+
+        '<div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Registry Orders</div>'+
+        '<div class="tw"><table style="width:100%;border-collapse:collapse">'+
+          '<thead><tr>'+
+            '<th style="text-align:left;padding:7px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">#</th>'+
+            '<th style="text-align:left;padding:7px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Patient</th>'+
+            '<th style="text-align:left;padding:7px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Phone</th>'+
+            '<th style="text-align:left;padding:7px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">City</th>'+
+            '<th style="text-align:left;padding:7px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Price</th>'+
+            '<th style="text-align:left;padding:7px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Advance</th>'+
+            '<th style="text-align:left;padding:7px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Commission</th>'+
+            '<th style="text-align:left;padding:7px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Status</th>'+
+            '<th style="text-align:left;padding:7px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Date</th>'+
+          '</tr></thead>'+
+          '<tbody>'+rows+'</tbody>'+
+        '</table></div>'+
+      '</div>'+
+      (opPayHist.length?
+        '<div style="padding:14px 18px">'+
+          '<div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">Payment History</div>'+
+          '<div class="tw"><table style="width:100%;border-collapse:collapse">'+
+            '<thead><tr>'+
+              '<th style="text-align:left;padding:6px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">#</th>'+
+              '<th style="text-align:left;padding:6px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Amount</th>'+
+              '<th style="text-align:left;padding:6px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Note</th>'+
+              '<th style="text-align:left;padding:6px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Date</th>'+
+              '<th style="text-align:left;padding:6px 10px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Del</th>'+
+            '</tr></thead>'+
+            '<tbody>'+payRows+'</tbody>'+
+          '</table></div>'+
+        '</div>':'')
+    +'</div>';
+  });
+
+  pg.innerHTML=`
+  <div class="ph"><div><h2>Registry / Advance</h2><p>Advance payment records</p></div>
+  <div class="pha">
+    <button class="btn bamb bsm" onclick="exportRegistryCSV()">⬇ CSV</button>
+    <button class="btn bp2 bsm" onclick="exportOperatorReport()">📊 Full Report</button>
+  </div></div>
+  <div style="background:linear-gradient(135deg,#5b21b6,#7c3aed);border-radius:14px;padding:20px 24px;margin-bottom:18px">
+    <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.9px;margin-bottom:5px">Total Registry Advance</div>
+    <div style="font-size:34px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:8px">${Rs(total)}</div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap">
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">📋 Orders: <strong>${regOrders.length}</strong></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">💛 Banti: <strong>${Rs(totalComm)}</strong></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">✅ Di: <strong>${Rs(totalPaid)}</strong></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">⏳ Baaki: <strong>${Rs(totalPending)}</strong></div>
+    </div>
+  </div>
+  ${opHTML||'<div class="card cbody"><div class="empty"><div class="empty-ic">📋</div><p>Koi registry order nahi.</p></div></div>'}`;
+}
+
 async function doChangePassword(){
   const oldEl=document.getElementById('pw-old');
   const newEl=document.getElementById('pw-new');
