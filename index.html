@@ -1448,40 +1448,65 @@ function toggleDayDetail(safeDate){}
 
 function rOpPassword(pg){
   const op=db.operators.find(x=>x.id===user.op.id)||{};
-  pg.innerHTML=
-    '<div class="ph"><div><h2>⚙️ Account Settings</h2><p>Password aur bank account update karo</p></div></div>'+
+  pg.innerHTML=`
+  <div class="ph"><div><h2>⚙️ Account Settings</h2><p>Password aur bank account update karo</p></div></div>
 
-    '<div class="card" style="margin-bottom:14px">'+
-    '<div class="ch2"><span class="ct">🔐 Password Change</span></div>'+
-    '<div class="cbody">'+
-    '<div class="fg">'+
-    '<div class="f full"><label>Purana Password</label><input type="password" id="pw-old" placeholder="Purana password" autocomplete="current-password"></div>'+
-    '<div class="f"><label>Naya Password</label><input type="password" id="pw-new" placeholder="Naya password" autocomplete="new-password"></div>'+
-    '<div class="f"><label>Confirm Naya Password</label><input type="password" id="pw-confirm" placeholder="Dobara likho" autocomplete="new-password"></div>'+
-    '</div>'+
-    '<div id="pw-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin:12px 0"></div>'+
-    '<button class="btn bp2" style="margin-top:4px" id="pw-save-btn">🔐 Password Change Karo</button>'+
-    '</div></div>'+
+  <div class="card" style="margin-bottom:14px">
+    <div class="ch2"><span class="ct">🔐 Password Change</span></div>
+    <div class="cbody">
+      <div class="fg">
+        <div class="f full">
+          <label>Purana Password</label>
+          <input type="password" id="pw-old" placeholder="Purana password daalo">
+        </div>
+        <div class="f">
+          <label>Naya Password</label>
+          <input type="password" id="pw-new" placeholder="Naya password (min 6)">
+        </div>
+        <div class="f">
+          <label>Confirm Password</label>
+          <input type="password" id="pw-confirm" placeholder="Dobara likho">
+        </div>
+      </div>
+      <div id="pw-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin:12px 0 4px"></div>
+      <button class="btn bp2" style="margin-top:10px" id="pw-save-btn">🔐 Password Save Karo</button>
+    </div>
+  </div>
 
-    '<div class="card">'+
-    '<div class="ch2"><span class="ct">🏦 Bank Account Details</span></div>'+
-    '<div class="cbody">'+
-    '<div style="font-size:12px;color:#64748b;margin-bottom:14px">Yeh details admin ko payment bhejne ke liye zaroori hain.</div>'+
-    '<div class="fg">'+
-    '<div class="f full"><label>Account Number / Phone Number</label><input type="text" id="acc-num" placeholder="e.g. 03001234567" value="'+(op.accNum||'')+'"></div>'+
-    '<div class="f"><label>Bank / Service</label><select id="acc-bank"><option value="">Select karo</option><option value="EasyPaisa" '+(op.bankName==='EasyPaisa'?'selected':'')+'>EasyPaisa</option><option value="JazzCash" '+(op.bankName==='JazzCash'?'selected':'')+'>JazzCash</option><option value="HBL" '+(op.bankName==='HBL'?'selected':'')+'>HBL</option><option value="Meezan Bank" '+(op.bankName==='Meezan Bank'?'selected':'')+'>Meezan Bank</option><option value="UBL" '+(op.bankName==='UBL'?'selected':'')+'>UBL</option><option value="Other" '+(op.bankName==='Other'?'selected':'')+'>Other</option></select></div>'+
-    '<div class="f"><label>Account Title (Owner Name)</label><input type="text" id="acc-title" placeholder="Account holder ka naam" value="'+(op.accTitle||'')+'"></div>'+
-    '</div>'+
-    '<div id="acc-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin:12px 0"></div>'+
-    '<button class="btn bp2" style="margin-top:4px" id="acc-save-btn">💾 Account Save Karo</button>'+
-    '</div></div>';
+  <div class="card">
+    <div class="ch2"><span class="ct">🏦 Bank Account Details</span></div>
+    <div class="cbody">
+      <div style="font-size:12px;color:#64748b;margin-bottom:14px">Admin ko payment bhejne ke liye yeh details zaroori hain.</div>
+      <div class="fg">
+        <div class="f full">
+          <label>Account Number / Phone Number</label>
+          <input type="text" id="acc-num" placeholder="e.g. 03001234567" value="${op.accNum||''}">
+        </div>
+        <div class="f">
+          <label>Bank / Service</label>
+          <select id="acc-bank">
+            <option value="">Select karo</option>
+            <option value="EasyPaisa" ${op.bankName==='EasyPaisa'?'selected':''}>EasyPaisa</option>
+            <option value="JazzCash" ${op.bankName==='JazzCash'?'selected':''}>JazzCash</option>
+            <option value="HBL" ${op.bankName==='HBL'?'selected':''}>HBL</option>
+            <option value="Meezan Bank" ${op.bankName==='Meezan Bank'?'selected':''}>Meezan Bank</option>
+            <option value="UBL" ${op.bankName==='UBL'?'selected':''}>UBL</option>
+            <option value="MCB" ${op.bankName==='MCB'?'selected':''}>MCB</option>
+            <option value="Other" ${op.bankName==='Other'?'selected':''}>Other</option>
+          </select>
+        </div>
+        <div class="f">
+          <label>Account Title (Owner Name)</label>
+          <input type="text" id="acc-title" placeholder="Account holder ka naam" value="${op.accTitle||''}">
+        </div>
+      </div>
+      <div id="acc-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin:12px 0 4px"></div>
+      <button class="btn bp2" style="margin-top:10px" id="acc-save-btn">💾 Account Save Karo</button>
+    </div>
+  </div>`;
 
-  setTimeout(()=>{
-    const pwBtn=document.getElementById('pw-save-btn');
-    const accBtn=document.getElementById('acc-save-btn');
-    if(pwBtn)pwBtn.addEventListener('click',changePassword);
-    if(accBtn)accBtn.addEventListener('click',saveAccountInfo);
-  },50);
+  document.getElementById('pw-save-btn').addEventListener('click', changePassword);
+  document.getElementById('acc-save-btn').addEventListener('click', saveAccountInfo);
 }
 
 function saveAccountInfo(){
