@@ -2075,6 +2075,76 @@ function exportCommCSV(){
   dlCSV(rows,'commissions.csv');toast('Exported!','⬇');
 }
 
+async function doChangePassword(){
+  const oldEl=document.getElementById('pw-old');
+  const newEl=document.getElementById('pw-new');
+  const conEl=document.getElementById('pw-confirm');
+  const msg=document.getElementById('pw-msg');
+  if(!oldEl||!newEl||!conEl){toast('Page dobara kholo!','❌',true);return;}
+  const oldPw=oldEl.value.trim();
+  const newPw=newEl.value.trim();
+  const conf=conEl.value.trim();
+  function showMsg(txt,ok){
+    if(!msg)return;
+    msg.style.display='block';
+    msg.style.background=ok?'rgba(16,185,129,.12)':'rgba(225,29,72,.12)';
+    msg.style.color=ok?'#34d399':'#fb7185';
+    msg.style.border='1px solid '+(ok?'rgba(52,211,153,.3)':'rgba(251,113,133,.3)');
+    msg.textContent=txt;
+  }
+  if(!oldPw||!newPw||!conf){showMsg('❌ Sab fields bharain!',false);return;}
+  if(oldPw!==user.op.password){showMsg('❌ Purana password galat hai!',false);return;}
+  if(newPw!==conf){showMsg('❌ Naya password match nahi!',false);return;}
+  if(newPw.length<6){showMsg('❌ Min 6 characters chahiye!',false);return;}
+  const i=db.operators.findIndex(x=>x.id===user.op.id);
+  if(i>=0){
+    db.operators[i].password=newPw;
+    user.op.password=newPw;
+    localStorage.setItem('hzd_db',JSON.stringify(db));
+    showMsg('⏳ Save ho raha hai...',true);
+    await syncToCloud();
+    showMsg('✅ Password change ho gaya!',true);
+    toast('Password change ho gaya!','✅');
+    oldEl.value='';newEl.value='';conEl.value='';
+  }
+}
+
+async function doSaveAcc(){
+  const numEl=document.getElementById('acc-num');
+  const bankEl=document.getElementById('acc-bank');
+  const titleEl=document.getElementById('acc-title');
+  const msg=document.getElementById('acc-msg');
+  function showMsg(txt,ok){
+    if(!msg)return;
+    msg.style.display='block';
+    msg.style.background=ok?'rgba(16,185,129,.12)':'rgba(225,29,72,.12)';
+    msg.style.color=ok?'#34d399':'#fb7185';
+    msg.style.border='1px solid '+(ok?'rgba(52,211,153,.3)':'rgba(251,113,133,.3)');
+    msg.textContent=txt;
+  }
+  if(!numEl||!bankEl||!titleEl){toast('Page dobara kholo!','❌',true);return;}
+  const accNum=numEl.value.trim();
+  const bankName=bankEl.value;
+  const accTitle=titleEl.value.trim();
+  if(!accNum){showMsg('❌ Account number daalo!',false);return;}
+  if(!bankName){showMsg('❌ Bank select karo!',false);return;}
+  if(!accTitle){showMsg('❌ Account title daalo!',false);return;}
+  const i=db.operators.findIndex(x=>x.id===user.op.id);
+  if(i>=0){
+    db.operators[i].accNum=accNum;
+    db.operators[i].bankName=bankName;
+    db.operators[i].accTitle=accTitle;
+    user.op.accNum=accNum;
+    user.op.bankName=bankName;
+    user.op.accTitle=accTitle;
+    localStorage.setItem('hzd_db',JSON.stringify(db));
+    showMsg('⏳ Save ho raha hai...',true);
+    await syncToCloud();
+    showMsg('✅ Account details save ho gayi!',true);
+    toast('Account details save ho gayi!','✅');
+  }
+}
+
 function exportRegistryCSV(){
   const regOrders=db.orders.filter(o=>o.orderType==='registry');
   const rows=[['#','Operator','Patient','Phone','City','Price','Advance','Commission','Status','Date']];
