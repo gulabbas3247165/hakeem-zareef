@@ -1149,7 +1149,10 @@ function rComm(pg,m){
   const pnd=all.filter(r=>r.status==='pending').reduce((s,r)=>s+r.comm,0);
   pg.innerHTML=isA?`
   <div class="ph"><div><h2>Commissions</h2><p>All team earnings</p></div>
-  <div class="pha"><button class="btn bamb bsm" onclick="exportCommCSV()">⬇ Export</button></div></div>
+  <div class="pha">
+    <button class="btn bamb bsm" onclick="exportCommCSV()">⬇ CSV</button>
+    <button class="btn bp2 bsm" onclick="exportOperatorReport()">📊 Full Report</button>
+  </div></div>
   <div class="sg" style="grid-template-columns:repeat(3,1fr)">
     <div class="sc g"><div class="sl">Paid Out</div><div class="sv g">${Rs(paid)}</div></div>
     <div class="sc a"><div class="sl">Pending</div><div class="sv a">${Rs(pnd)}</div></div>
@@ -1543,7 +1546,10 @@ function rRegistry(pg){
 
   pg.innerHTML=`
   <div class="ph"><div><h2>Registry / Advance</h2><p>Advance payment records aur commission tracker</p></div>
-  <div class="pha"><button class="btn bamb bsm" onclick="exportRegistryCSV()">⬇ Export</button></div></div>
+  <div class="pha">
+    <button class="btn bamb bsm" onclick="exportRegistryCSV()">⬇ Registry CSV</button>
+    <button class="btn bp2 bsm" onclick="exportOperatorReport()">📊 Full Report</button>
+  </div></div>
 
   <div style="background:linear-gradient(135deg,#5b21b6,#7c3aed);border-radius:14px;padding:20px 24px;margin-bottom:18px;position:relative;overflow:hidden">
     <div style="position:absolute;right:-10px;top:-10px;width:140px;height:140px;background:rgba(255,255,255,.04);border-radius:50%"></div>
@@ -1580,7 +1586,7 @@ function openRegPay(opId){
   openM('m-regpay');
 }
 
-function saveRegPay(){
+async function saveRegPay(){
   const amt=parseFloat(document.getElementById('regpay-amt').value)||0;
   if(!amt){toast('Amount daalo!','❌',true);return;}
   if(!db.regPayments)db.regPayments=[];
@@ -1590,8 +1596,14 @@ function saveRegPay(){
     note:document.getElementById('regpay-note').value.trim(),
     date:document.getElementById('regpay-date').value
   });
-  save();closeM('m-regpay');regPayOpId=null;
-  toast('Payment save ho gayi!','💸');rc2();
+  // Save locally immediately
+  localStorage.setItem('hzd_db',JSON.stringify(db));
+  closeM('m-regpay');
+  toast('Payment save ho gayi!','💸');
+  rc2();
+  // Then sync to cloud
+  await syncToCloud();
+  regPayOpId=null;
 }
 
 function exportRegistryCSV(){
@@ -1599,6 +1611,46 @@ function exportRegistryCSV(){
   const rows=[['#','Operator','Patient','Phone','City','Condition','Price','Advance','Balance','Commission','Status','Date']];
   regOrders.forEach((o,i)=>rows.push([i+1,opNm(o.opId),o.name,o.phone,o.city||'',o.disease||'',o.price,o.advance,o.baaki,getComm(o.price)||'',o.status,new Date(o.date).toLocaleDateString()]));
   dlCSV(rows,'registry_orders.csv');toast('Exported!','⬇');
+}
+
+function exportOperatorReport(){
+  // Full operator summary report
+  const rows=[
+    ['HAKEEM ZAREEF DAWAKHANA — OPERATOR REPORT'],
+    ['Generated: '+new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})],
+    [''],
+    ['Operator','Total Orders','VPL Orders','Registry Orders','Total Advance (Rs)','Total Commission (Rs)','Commission Paid (Rs)','Commission Baaki (Rs)']
+  ];
+
+  db.operators.forEach(op=>{
+    const ords=db.orders.filter(o=>o.opId===op.id);
+    const vpl=ords.filter(o=>o.orderType!=='registry').length;
+    const reg=ords.filter(o=>o.orderType==='registry').length;
+    const adv=ords.reduce((s,o)=>s+o.advance,0);
+    const comm=ords.reduce((s,o)=>s+getComm(o.price),0);
+    const paid=(db.regPayments||[]).filter(p=>p.opId===op.id).reduce((s,p)=>s+p.amount,0);
+    // Also include VPL approved commissions
+    const vplPaid=db.moReqs.filter(r=>r.opId===op.id&&r.status==='approved').reduce((s,r)=>{
+      const ord=db.orders.find(o=>o.id===r.orderId);
+      return s+(ord?getComm(ord.price):0);
+    },0);
+    const totalPaid=paid+vplPaid;
+    const baaki=Math.max(0,comm-totalPaid);
+    rows.push([op.name,ords.length,vpl,reg,adv,comm,totalPaid,baaki]);
+  });
+
+  rows.push(['']);
+  rows.push(['TOTALS',
+    db.orders.length,
+    db.orders.filter(o=>o.orderType!=='registry').length,
+    db.orders.filter(o=>o.orderType==='registry').length,
+    db.orders.reduce((s,o)=>s+o.advance,0),
+    db.orders.reduce((s,o)=>s+getComm(o.price),0),
+    '',''
+  ]);
+
+  dlCSV(rows,'operator_report_'+new Date().toISOString().slice(0,10)+'.csv');
+  toast('Report download ho rahi hai!','⬇');
 }
 
 function rTeam(pg){
