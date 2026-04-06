@@ -492,6 +492,25 @@ tr:hover td{background:rgba(255,255,255,.02);}
 </div>
 </div>
 
+<!-- REG PAYMENT MODAL -->
+<div class="ov" id="m-regpay">
+<div class="modal">
+  <div class="mh"><h3>💸 Registry Payment Di</h3><button class="mcl" id="cls-regpay">✕</button></div>
+  <div class="mb">
+    <div style="background:rgba(16,185,129,.08);border:1px solid rgba(52,211,153,.2);border-radius:9px;padding:13px;margin-bottom:13px" id="regpay-info"></div>
+    <div class="fg">
+      <div class="f"><label>Amount (Rs) *</label><input type="number" id="regpay-amt" placeholder="0" inputmode="numeric"></div>
+      <div class="f"><label>Date</label><input type="date" id="regpay-date"></div>
+      <div class="f full"><label>Note (Optional)</label><input id="regpay-note" placeholder="e.g. Bank transfer, cash..."></div>
+    </div>
+  </div>
+  <div class="mft">
+    <button class="btn bgh bsm" id="cancel-regpay">Cancel</button>
+    <button class="btn bp2 bsm" id="save-regpay-btn">💸 Payment Save Karo</button>
+  </div>
+</div>
+</div>
+
 <div class="toast" id="toast"><span id="tic">✓</span><span id="tmsg"></span></div>
 
 <script>
@@ -510,7 +529,7 @@ function defaultDB(){
       {id:8,name:'Shahzad', city:'',password:'shahzad786',color:'#be185d'},
       {id:9,name:'Zeeshan', city:'',password:'zeeshan786',color:'#134e4a'},
     ],
-    orders:[],returns:[],moReqs:[]
+    orders:[],returns:[],moReqs:[],regPayments:[]
   };
 }
 let db=(()=>{
@@ -523,12 +542,13 @@ let db=(()=>{
       parsed.orders=parsed.orders||[];
       parsed.returns=parsed.returns||[];
       parsed.moReqs=parsed.moReqs||[];
+      parsed.regPayments=parsed.regPayments||[];
       return parsed;
     }
   }catch(e){}
   return defaultDB();
 })();
-let user=null,eOid=null,eOpid=null,rOid=null,moOid=null,apprId=null,curOT='vpl',charts={};
+let user=null,eOid=null,eOpid=null,rOid=null,moOid=null,apprId=null,curOT='vpl',charts={},regPayOpId=null;
 
 const FB_URL='https://hzd-crm-default-rtdb.firebaseio.com/hzd.json';
 let saveTimer=null;
@@ -576,6 +596,7 @@ async function loadFromCloud(){
       data.orders=data.orders||[];
       data.returns=data.returns||[];
       data.moReqs=data.moReqs||[];
+      data.regPayments=data.regPayments||[];
       // ONLY replace local data if cloud has MORE or EQUAL orders
       // This prevents cloud from wiping freshly added local orders
       const localCount=db.orders?db.orders.length:0;
@@ -768,6 +789,7 @@ function buildSB(){
   document.getElementById('sidebar').innerHTML=user.role==='admin'?`
     <div class="ng">Overview</div>
     <div class="ni" data-p="dashboard"><div class="ni-ic">📊</div>Dashboard</div>
+    <div class="ni" data-p="today"><div class="ni-ic">📅</div>Aaj Ka Hisab</div>
     <div class="ng">Records</div>
     <div class="ni" data-p="orders"><div class="ni-ic">📦</div>All Orders</div>
     <div class="ni" data-p="patients"><div class="ni-ic">🧑‍⚕️</div>Patients</div>
@@ -777,6 +799,7 @@ function buildSB(){
     <div class="ni" data-p="mo-late"><div class="ni-ic">⚠️</div>Late MO ${lb}</div>
     <div class="ni" data-p="mo-appr"><div class="ni-ic">✅</div>MO Approval ${mb}</div>
     <div class="ni" data-p="commissions"><div class="ni-ic">💵</div>Commissions</div>
+    <div class="ni" data-p="registry"><div class="ni-ic">📋</div>Registry / Advance</div>
     <div class="ng">Analytics</div>
     <div class="ni" data-p="performance"><div class="ni-ic">🏆</div>Performance</div>
     <div class="ng">Settings</div>
@@ -784,10 +807,12 @@ function buildSB(){
   `:`
     <div class="ng">Menu</div>
     <div class="ni" data-p="op-home"><div class="ni-ic">📊</div>Dashboard</div>
+    <div class="ni" data-p="op-today"><div class="ni-ic">📅</div>Aaj Ka Hisab</div>
     <div class="ni" data-p="op-orders"><div class="ni-ic">📦</div>My Orders</div>
     <div class="ni" data-p="op-patients"><div class="ni-ic">🧑‍⚕️</div>My Patients</div>
     <div class="ni" data-p="op-returns"><div class="ni-ic">↩</div>Returns ${rb}</div>
     <div class="ni" data-p="op-commission"><div class="ni-ic">💵</div>My Commission</div>
+    <div class="ni" data-p="op-password"><div class="ni-ic">🔐</div>Change Password</div>
   `;
   document.querySelectorAll('.ni').forEach(el=>tap(el,()=>{nav(el.dataset.p);closeSB();}));
 }
@@ -797,13 +822,14 @@ function closeSB(){document.getElementById('sidebar').classList.remove('on');doc
 /* ══ PAGES ══ */
 function buildPages(){
   document.getElementById('main').innerHTML=user.role==='admin'?`
-    <div class="page" id="p-dashboard"></div><div class="page" id="p-orders"></div>
+    <div class="page" id="p-dashboard"></div><div class="page" id="p-today"></div><div class="page" id="p-orders"></div>
     <div class="page" id="p-patients"></div><div class="page" id="p-payments"></div>
     <div class="page" id="p-returns"></div><div class="page" id="p-mo-late"></div>
     <div class="page" id="p-mo-appr"></div><div class="page" id="p-commissions"></div>
+    <div class="page" id="p-registry"></div>
     <div class="page" id="p-performance"></div><div class="page" id="p-team"></div>
   `:`
-    <div class="page" id="p-op-home"></div><div class="page" id="p-op-orders"></div>
+    <div class="page" id="p-op-home"></div><div class="page" id="p-op-today"></div><div class="page" id="p-op-orders"></div>
     <div class="page" id="p-op-patients"></div><div class="page" id="p-op-returns"></div>
     <div class="page" id="p-op-commission"></div>
   `;
@@ -834,12 +860,16 @@ function rp(id,pg){
     case 'mo-appr':rMOAppr(pg);break;
     case 'commissions':rComm(pg,'a');break;
     case 'performance':rPerf(pg);break;
+    case 'registry':rRegistry(pg);break;
+    case 'today':rToday(pg,'a');break;
     case 'team':rTeam(pg);break;
     case 'op-home':rOpHome(pg);break;
     case 'op-orders':rOpOrds(pg);break;
     case 'op-patients':rPats(pg,'o');break;
     case 'op-returns':rRets(pg,'o');break;
     case 'op-commission':rComm(pg,'o');break;
+    case 'op-today':rToday(pg,'o');break;
+    case 'op-password':rOpPassword(pg);break;
   }
 }
 
@@ -1152,6 +1182,30 @@ function rComm(pg,m){
     <div class="sc a"><div class="sl">Pending</div><div class="sv a">${Rs(pnd)}</div></div>
     <div class="sc b"><div class="sl">Total Orders</div><div class="sv b">${all.length}</div></div>
   </div>
+  ${(()=>{
+    const myRegOrders=db.orders.filter(o=>o.opId===user.op.id&&o.orderType==='registry');
+    const myRegComm=myRegOrders.reduce((s,o)=>s+getComm(o.price),0);
+    const myRegPaid=(db.regPayments||[]).filter(p=>p.opId===user.op.id).reduce((s,p)=>s+p.amount,0);
+    const myRegPending=Math.max(0,myRegComm-myRegPaid);
+    if(myRegOrders.length===0)return '';
+    return `<div style="background:#1e293b;border:1px solid #334155;border-radius:14px;padding:18px 20px;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:800;color:#f8fafc;margin-bottom:14px">📋 Registry Commission</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+        <div style="background:#0a0f1a;padding:10px 14px;border-radius:8px;border:1px solid #334155;text-align:center">
+          <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Banti Hai</div>
+          <div style="font-size:18px;font-weight:900;color:#fbbf24;margin-top:2px">${Rs(myRegComm)}</div>
+        </div>
+        <div style="background:#0a0f1a;padding:10px 14px;border-radius:8px;border:1px solid #334155;text-align:center">
+          <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Mili</div>
+          <div style="font-size:18px;font-weight:900;color:#34d399;margin-top:2px">${Rs(myRegPaid)}</div>
+        </div>
+        <div style="background:#0a0f1a;padding:10px 14px;border-radius:8px;border:${myRegPending>0?'1px solid rgba(251,113,133,.3)':'1px solid #334155'};text-align:center">
+          <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Baaki Milni</div>
+          <div style="font-size:18px;font-weight:900;color:${myRegPending>0?'#fb7185':'#34d399'};margin-top:2px">${Rs(myRegPending)}</div>
+        </div>
+      </div>
+    </div>`;
+  })()}
   <div class="card"><div class="tw"><table>
   <thead><tr><th>#</th><th>Patient</th><th>Price</th><th>Commission</th><th>Type</th><th>Status</th><th>Date</th></tr></thead>
   <tbody>${all.length?all.slice().reverse().map((r,i)=>`<tr>
@@ -1195,6 +1249,356 @@ function rPerf(pg){
     </div>`).join('')}</div>`;
   mkC('chpb','bar',ops.map(o=>o.name),ops.map(o=>o.orders),ops.map(o=>o.color+'cc'));
   mkC('chpr','bar',ops.map(o=>o.name),ops.map(o=>o.rev),ops.map(o=>o.color+'cc'));
+}
+
+function rToday(pg,m){
+  const isA=m==='a';
+  const allOrds=isA?db.orders:db.orders.filter(o=>o.opId===user.op.id);
+
+  // Get today's date as default
+  const todayStr=new Date().toISOString().slice(0,10);
+
+  pg.innerHTML=`
+  <div class="ph"><div><h2>📅 Daily Report</h2><p>Date select karo — us din ka mukammal record dekhain</p></div></div>
+
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div style="font-size:13px;font-weight:700;color:#e2e8f0">📆 Date Select Karo:</div>
+    <input type="date" id="report-date" value="${todayStr}" style="padding:9px 13px;border:1.5px solid #059669;border-radius:8px;font-size:14px;font-family:Inter,sans-serif;background:#0a0f1a;color:#e2e8f0;outline:none;cursor:pointer">
+    <button class="btn bp2 bsm" onclick="loadDayReport('${m}')">🔍 Dekho</button>
+  </div>
+
+  <div id="day-report-content"></div>`;
+
+  // Auto load today
+  loadDayReport(m);
+}
+
+function loadDayReport(m){
+  const isA=m==='a';
+  const dateInput=document.getElementById('report-date');
+  if(!dateInput)return;
+  const selectedDate=dateInput.value;
+  if(!selectedDate)return;
+
+  const allOrds=isA?db.orders:db.orders.filter(o=>o.opId===user.op.id);
+  const dayOrds=allOrds.filter(o=>o.date&&o.date.slice(0,10)===selectedDate);
+  const dayVPL=dayOrds.filter(o=>o.orderType!=='registry');
+  const dayReg=dayOrds.filter(o=>o.orderType==='registry');
+  const dateLabel=new Date(selectedDate+'T00:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const isToday=selectedDate===new Date().toISOString().slice(0,10);
+
+  // Per operator breakdown
+  let opCards='';
+  if(isA){
+    db.operators.forEach(op=>{
+      const opVPL=dayVPL.filter(o=>o.opId===op.id);
+      const opReg=dayReg.filter(o=>o.opId===op.id);
+      if(opVPL.length+opReg.length===0)return;
+      const opAdv=([...opVPL,...opReg]).reduce((s,o)=>s+o.advance,0);
+      const opComm=([...opVPL,...opReg]).reduce((s,o)=>s+getComm(o.price),0);
+
+      let orderRows='';
+      const opOrds=[...opVPL,...opReg];
+      opOrds.forEach((o,i)=>{
+        orderRows+=`<tr>
+          <td style="padding:7px 10px;font-size:11px;color:#64748b;border-bottom:1px solid #1e293b">${i+1}</td>
+          <td style="padding:7px 10px;border-bottom:1px solid #1e293b"><strong style="color:#e2e8f0;font-size:13px">${o.name}</strong><div style="font-size:11px;color:#64748b">${o.phone}</div></td>
+          <td style="padding:7px 10px;border-bottom:1px solid #1e293b">${o.orderType==='registry'?'<span class="bdg bv" style="font-size:11px">📋 Registry</span>':'<span class="bdg bc" style="font-size:11px">📦 VPL</span>'}</td>
+          <td style="padding:7px 10px;border-bottom:1px solid #1e293b;font-weight:700;color:#e2e8f0">${Rs(o.price)}</td>
+          <td style="padding:7px 10px;border-bottom:1px solid #1e293b;color:#34d399;font-weight:700">${Rs(o.advance)}</td>
+          <td style="padding:7px 10px;border-bottom:1px solid #1e293b;color:#34d399;font-weight:800">${getComm(o.price)?Rs(getComm(o.price)):'—'}</td>
+          <td style="padding:7px 10px;border-bottom:1px solid #1e293b">${sbdg(o.status)}</td>
+        </tr>`;
+      });
+
+      opCards+=`<div style="background:#1e293b;border:1px solid #334155;border-radius:12px;margin-bottom:10px;overflow:hidden">
+        <div style="padding:13px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:1px solid #334155">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;border-radius:9px;background:${op.color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px">${op.name.slice(0,2)}</div>
+            <div>
+              <div style="font-weight:700;color:#f8fafc;font-size:14px">${op.name}</div>
+              <div style="font-size:11px;color:#64748b;margin-top:1px">${op.city||'—'}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div style="background:#0a0f1a;padding:7px 12px;border-radius:8px;border:1px solid #334155;text-align:center">
+              <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">VPL</div>
+              <div style="font-size:18px;font-weight:900;color:#60a5fa">${opVPL.length}</div>
+            </div>
+            <div style="background:#0a0f1a;padding:7px 12px;border-radius:8px;border:1px solid #334155;text-align:center">
+              <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Registry</div>
+              <div style="font-size:18px;font-weight:900;color:#a78bfa">${opReg.length}</div>
+            </div>
+            <div style="background:#0a0f1a;padding:7px 12px;border-radius:8px;border:1px solid #334155;text-align:center">
+              <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Advance</div>
+              <div style="font-size:14px;font-weight:900;color:#34d399">${Rs(opAdv)}</div>
+            </div>
+            <div style="background:#0a0f1a;padding:7px 12px;border-radius:8px;border:1px solid #334155;text-align:center">
+              <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Commission</div>
+              <div style="font-size:14px;font-weight:900;color:#fbbf24">${Rs(opComm)}</div>
+            </div>
+          </div>
+        </div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+          <table style="width:100%;border-collapse:collapse;min-width:480px">
+            <thead><tr>
+              <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;background:#0a0f1a;border-bottom:1px solid #334155">#</th>
+              <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;background:#0a0f1a;border-bottom:1px solid #334155">Patient</th>
+              <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;background:#0a0f1a;border-bottom:1px solid #334155">Type</th>
+              <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;background:#0a0f1a;border-bottom:1px solid #334155">Price</th>
+              <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;background:#0a0f1a;border-bottom:1px solid #334155">Advance</th>
+              <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;background:#0a0f1a;border-bottom:1px solid #334155">Commission</th>
+              <th style="text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;background:#0a0f1a;border-bottom:1px solid #334155">Status</th>
+            </tr></thead>
+            <tbody>${orderRows}</tbody>
+          </table>
+        </div>
+      </div>`;
+    });
+  } else {
+    // Operator view - just their orders
+    let orderRows='';
+    dayOrds.forEach((o,i)=>{
+      orderRows+=`<tr>
+        <td style="padding:7px 10px;font-size:11px;color:#64748b;border-bottom:1px solid #1e293b">${i+1}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #1e293b"><strong style="color:#e2e8f0">${o.name}</strong><div style="font-size:11px;color:#64748b">${o.phone}</div></td>
+        <td style="padding:7px 10px;border-bottom:1px solid #1e293b">${o.orderType==='registry'?'<span class="bdg bv">📋 Registry</span>':'<span class="bdg bc">📦 VPL</span>'}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #1e293b;font-weight:700;color:#e2e8f0">${Rs(o.price)}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #1e293b;color:#34d399;font-weight:700">${Rs(o.advance)}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #1e293b;color:#34d399;font-weight:800">${getComm(o.price)?Rs(getComm(o.price)):'—'}</td>
+        <td style="padding:7px 10px;border-bottom:1px solid #1e293b">${sbdg(o.status)}</td>
+      </tr>`;
+    });
+    opCards=dayOrds.length?`<div class="card"><div class="tw"><table>
+      <thead><tr>
+        <th>#</th><th>Patient</th><th>Type</th><th>Price</th><th>Advance</th><th>Commission</th><th>Status</th>
+      </tr></thead>
+      <tbody>${orderRows}</tbody>
+    </table></div></div>`:``;
+  }
+
+  const content=document.getElementById('day-report-content');
+  if(!content)return;
+  content.innerHTML=`
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px 20px;margin-bottom:16px">
+      <div style="font-size:12px;color:#64748b;font-weight:600;margin-bottom:4px">${isToday?'🟢 Aaj —':''} ${dateLabel}</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+        <div style="text-align:center;background:#0a0f1a;padding:10px 16px;border-radius:8px;border:1px solid #334155;min-width:70px">
+          <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Total</div>
+          <div style="font-size:22px;font-weight:900;color:#e2e8f0">${dayOrds.length}</div>
+        </div>
+        <div style="text-align:center;background:#0a0f1a;padding:10px 16px;border-radius:8px;border:1px solid #334155;min-width:70px">
+          <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">VPL</div>
+          <div style="font-size:22px;font-weight:900;color:#60a5fa">${dayVPL.length}</div>
+        </div>
+        <div style="text-align:center;background:#0a0f1a;padding:10px 16px;border-radius:8px;border:1px solid #334155;min-width:70px">
+          <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Registry</div>
+          <div style="font-size:22px;font-weight:900;color:#a78bfa">${dayReg.length}</div>
+        </div>
+        <div style="text-align:center;background:#0a0f1a;padding:10px 16px;border-radius:8px;border:1px solid #334155;min-width:90px">
+          <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Advance</div>
+          <div style="font-size:18px;font-weight:900;color:#34d399">${Rs(dayOrds.reduce((s,o)=>s+o.advance,0))}</div>
+        </div>
+        <div style="text-align:center;background:#0a0f1a;padding:10px 16px;border-radius:8px;border:1px solid #334155;min-width:90px">
+          <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Commission</div>
+          <div style="font-size:18px;font-weight:900;color:#fbbf24">${Rs(dayOrds.reduce((s,o)=>s+getComm(o.price),0))}</div>
+        </div>
+      </div>
+    </div>
+    ${dayOrds.length===0?`<div class="card cbody"><div class="empty"><div class="empty-ic">📭</div><p>Is din koi order nahi tha.</p></div></div>`:''}
+    ${opCards}`;
+}
+
+function toggleDayDetail(safeDate){}
+
+function rOpPassword(pg){
+  pg.innerHTML=`
+  <div class="ph"><div><h2>🔐 Password Change Karo</h2><p>Apna login password update karo</p></div></div>
+  <div class="card cbody" style="max-width:400px">
+    <div class="f" style="margin-bottom:14px">
+      <label>Purana Password</label>
+      <input type="password" id="pw-old" placeholder="Purana password daalo">
+    </div>
+    <div class="f" style="margin-bottom:14px">
+      <label>Naya Password</label>
+      <input type="password" id="pw-new" placeholder="Naya password daalo">
+    </div>
+    <div class="f" style="margin-bottom:18px">
+      <label>Naya Password Confirm</label>
+      <input type="password" id="pw-confirm" placeholder="Dobara likho">
+    </div>
+    <button class="btn bp2" style="width:100%" onclick="changePassword()">🔐 Password Change Karo</button>
+  </div>`;
+}
+
+function changePassword(){
+  const oldPw=document.getElementById('pw-old').value;
+  const newPw=document.getElementById('pw-new').value;
+  const confirm=document.getElementById('pw-confirm').value;
+  if(!oldPw||!newPw||!confirm){toast('Sab fields bharain!','❌',true);return;}
+  if(oldPw!==user.op.password){toast('Purana password galat hai!','❌',true);return;}
+  if(newPw!==confirm){toast('Naya password match nahi karta!','❌',true);return;}
+  if(newPw.length<6){toast('Password kam az kam 6 characters ka hona chahiye!','❌',true);return;}
+  const i=db.operators.findIndex(x=>x.id===user.op.id);
+  if(i>=0){
+    db.operators[i].password=newPw;
+    user.op.password=newPw;
+    toast('Password change ho gaya!','✅');
+    save();
+    document.getElementById('pw-old').value='';
+    document.getElementById('pw-new').value='';
+    document.getElementById('pw-confirm').value='';
+  }
+}
+
+function rRegistry(pg){
+  if(!db.regPayments)db.regPayments=[];
+  const regOrders=db.orders.filter(o=>o.orderType==='registry');
+  const total=regOrders.reduce((s,o)=>s+o.advance,0);
+
+  // Per operator registry summary
+  const byOp=db.operators.map(op=>{
+    const ops=regOrders.filter(o=>o.opId===op.id);
+    const totalComm=ops.reduce((s,o)=>s+getComm(o.price),0);
+    const paid=db.regPayments.filter(p=>p.opId===op.id).reduce((s,p)=>s+p.amount,0);
+    const pending=Math.max(0,totalComm-paid);
+    return{...op,count:ops.length,totalAdv:ops.reduce((s,o)=>s+o.advance,0),totalComm,paid,pending,orders:ops};
+  }).filter(x=>x.count>0).sort((a,b)=>b.totalAdv-a.totalAdv);
+
+  const totalComm=byOp.reduce((s,o)=>s+o.totalComm,0);
+  const totalPaid=byOp.reduce((s,o)=>s+o.paid,0);
+  const totalPending=byOp.reduce((s,o)=>s+o.pending,0);
+
+  let opHTML='';
+  byOp.forEach(op=>{
+    let rows='';
+    op.orders.slice().reverse().forEach((o,i)=>{
+      rows+=`<tr>
+        <td style="color:#64748b;font-size:11px">${i+1}</td>
+        <td><strong style="color:#e2e8f0">${o.name}</strong></td>
+        <td><a href="tel:${o.phone}" style="color:#60a5fa;text-decoration:none;font-weight:600">${o.phone}</a></td>
+        <td>${o.city||'—'}</td>
+        <td style="font-weight:700;color:#e2e8f0">${Rs(o.price)}</td>
+        <td style="color:#34d399;font-weight:700">${Rs(o.advance)}</td>
+        <td style="color:#34d399;font-weight:800">${getComm(o.price)?Rs(getComm(o.price)):'—'}</td>
+        <td>${sbdg(o.status)}</td>
+        <td style="font-size:11px;color:#64748b">${new Date(o.date).toLocaleDateString()}</td>
+      </tr>`;
+    });
+
+    // Payment history for this operator
+    const opPayHist=db.regPayments.filter(p=>p.opId===op.id);
+    let payRows='';
+    opPayHist.forEach((p,i)=>{
+      payRows+=`<tr>
+        <td style="color:#64748b;font-size:11px">${i+1}</td>
+        <td style="color:#34d399;font-weight:700">${Rs(p.amount)}</td>
+        <td style="font-size:12px;color:#94a3b8">${p.note||'—'}</td>
+        <td style="font-size:11px;color:#64748b">${new Date(p.date).toLocaleDateString()}</td>
+        <td><button class="btn bxs brd" data-action="del-regpay" data-id="${p.id}">🗑</button></td>
+      </tr>`;
+    });
+
+    opHTML+=`<div class="card" style="margin-bottom:14px">
+      <div class="ch2">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:38px;height:38px;border-radius:9px;background:${op.color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px">${op.name.slice(0,2)}</div>
+          <div>
+            <div style="font-weight:700;color:#f8fafc;font-size:14px">${op.name}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px">${op.count} registry orders · Advance: <strong style="color:#34d399">${Rs(op.totalAdv)}</strong></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <div style="text-align:center;background:#0a0f1a;padding:8px 12px;border-radius:8px;border:1px solid #334155">
+            <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Banti Hai</div>
+            <div style="font-size:16px;font-weight:900;color:#fbbf24">${Rs(op.totalComm)}</div>
+          </div>
+          <div style="text-align:center;background:#0a0f1a;padding:8px 12px;border-radius:8px;border:1px solid #334155">
+            <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Di</div>
+            <div style="font-size:16px;font-weight:900;color:#34d399">${Rs(op.paid)}</div>
+          </div>
+          <div style="text-align:center;background:#0a0f1a;padding:8px 12px;border-radius:8px;border:1px solid ${op.pending>0?'rgba(251,113,133,.3)':'#334155'}">
+            <div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Baaki</div>
+            <div style="font-size:16px;font-weight:900;color:${op.pending>0?'#fb7185':'#34d399'}">${Rs(op.pending)}</div>
+          </div>
+          <button class="btn bp2 bsm" data-action="pay-reg" data-id="${op.id}" style="font-size:12px">💸 Payment Di</button>
+        </div>
+      </div>
+      <div style="padding:14px 18px;border-bottom:1px solid #334155">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Registry Orders</div>
+        <div class="tw"><table>
+          <thead><tr><th>#</th><th>Patient</th><th>Phone</th><th>City</th><th>Price</th><th>Advance</th><th>Commission</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>${rows||'<tr><td colspan="9" style="text-align:center;color:#64748b;padding:16px">Koi order nahi</td></tr>'}</tbody>
+        </table></div>
+      </div>
+      ${opPayHist.length?`<div style="padding:14px 18px">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Payment History</div>
+        <div class="tw"><table>
+          <thead><tr><th>#</th><th>Amount</th><th>Note</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody>${payRows}</tbody>
+        </table></div>
+      </div>`:''}
+    </div>`;
+  });
+
+  pg.innerHTML=`
+  <div class="ph"><div><h2>Registry / Advance</h2><p>Advance payment records aur commission tracker</p></div>
+  <div class="pha"><button class="btn bamb bsm" onclick="exportRegistryCSV()">⬇ Export</button></div></div>
+
+  <div style="background:linear-gradient(135deg,#5b21b6,#7c3aed);border-radius:14px;padding:20px 24px;margin-bottom:18px;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-10px;top:-10px;width:140px;height:140px;background:rgba(255,255,255,.04);border-radius:50%"></div>
+    <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.9px;margin-bottom:5px">Total Registry Advance</div>
+    <div style="font-size:34px;font-weight:900;color:#fff;letter-spacing:-1.5px;margin-bottom:8px">${Rs(total)}</div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap">
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">📋 Orders: <strong>${regOrders.length}</strong></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">💛 Banti: <strong>${Rs(totalComm)}</strong></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">✅ Di: <strong>${Rs(totalPaid)}</strong></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">⏳ Baaki: <strong>${Rs(totalPending)}</strong></div>
+    </div>
+  </div>
+
+  ${opHTML||'<div class="card cbody"><div class="empty"><div class="empty-ic">📋</div><p>Koi registry order nahi abhi.</p></div></div>'}`;
+}
+
+function openRegPay(opId){
+  regPayOpId=opId;
+  const op=db.operators.find(x=>x.id===opId);
+  if(!op)return;
+  const regOrders=db.orders.filter(o=>o.opId===opId&&o.orderType==='registry');
+  const totalComm=regOrders.reduce((s,o)=>s+getComm(o.price),0);
+  const paid=(db.regPayments||[]).filter(p=>p.opId===opId).reduce((s,p)=>s+p.amount,0);
+  const pending=Math.max(0,totalComm-paid);
+  document.getElementById('regpay-info').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Operator</div><div style="font-weight:700;color:#e2e8f0;margin-top:2px">${op.name}</div></div>
+      <div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Banti Hai</div><div style="font-weight:900;color:#fbbf24;font-size:16px;margin-top:2px">${Rs(totalComm)}</div></div>
+      <div><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Baaki</div><div style="font-weight:900;color:${pending>0?'#fb7185':'#34d399'};font-size:16px;margin-top:2px">${Rs(pending)}</div></div>
+    </div>`;
+  document.getElementById('regpay-amt').value=pending||'';
+  document.getElementById('regpay-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('regpay-note').value='';
+  openM('m-regpay');
+}
+
+function saveRegPay(){
+  const amt=parseFloat(document.getElementById('regpay-amt').value)||0;
+  if(!amt){toast('Amount daalo!','❌',true);return;}
+  if(!db.regPayments)db.regPayments=[];
+  db.regPayments.push({
+    id:Date.now(),opId:regPayOpId,
+    amount:amt,
+    note:document.getElementById('regpay-note').value.trim(),
+    date:document.getElementById('regpay-date').value
+  });
+  save();closeM('m-regpay');regPayOpId=null;
+  toast('Payment save ho gayi!','💸');rc2();
+}
+
+function exportRegistryCSV(){
+  const regOrders=db.orders.filter(o=>o.orderType==='registry');
+  const rows=[['#','Operator','Patient','Phone','City','Condition','Price','Advance','Balance','Commission','Status','Date']];
+  regOrders.forEach((o,i)=>rows.push([i+1,opNm(o.opId),o.name,o.phone,o.city||'',o.disease||'',o.price,o.advance,o.baaki,getComm(o.price)||'',o.status,new Date(o.date).toLocaleDateString()]));
+  dlCSV(rows,'registry_orders.csv');toast('Exported!','⬇');
 }
 
 function rTeam(pg){
@@ -1595,6 +1999,8 @@ function handleAction(e){
     case 'del-op':delOp(id);break;
     case 'edit-op':openOpM(id);break;
     case 'appr-mo':openApprModal(id);break;
+    case 'pay-reg':openRegPay(id);break;
+    case 'del-regpay':{if(!confirm('Delete payment?'))return;db.regPayments=db.regPayments.filter(x=>x.id!==id);toast('Deleted.','🗑️');save();rc2();break;}
   }
 }
 
@@ -1669,6 +2075,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   tap(document.getElementById('approve-mo-btn'),approveMO);
   tap(document.getElementById('reject-mo-btn'),rejectMO);
   tap(document.getElementById('sync-btn'),openSyncModal);
+  tap(document.getElementById('cls-regpay'),()=>closeM('m-regpay'));
+  tap(document.getElementById('cancel-regpay'),()=>closeM('m-regpay'));
+  tap(document.getElementById('save-regpay-btn'),saveRegPay);
   tap(document.getElementById('copy-sync-btn'),copySync);
   tap(document.getElementById('apply-sync-btn'),applySync);
 
