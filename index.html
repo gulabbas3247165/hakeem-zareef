@@ -529,7 +529,7 @@ function defaultDB(){
       {id:8,name:'Shahzad', city:'',password:'shahzad786',color:'#be185d',accNum:'',bankName:'',accTitle:''},
       {id:9,name:'Zeeshan', city:'',password:'zeeshan786',color:'#134e4a',accNum:'',bankName:'',accTitle:''},
     ],
-    orders:[],returns:[],moReqs:[],regPayments:[]
+    orders:[],returns:[],moReqs:[],regPayments:[],vplPayments:[]
   };
 }
 let db=(()=>{
@@ -543,6 +543,7 @@ let db=(()=>{
       parsed.returns=parsed.returns||[];
       parsed.moReqs=parsed.moReqs||[];
       parsed.regPayments=parsed.regPayments||[];
+      parsed.vplPayments=parsed.vplPayments||[];
       return parsed;
     }
   }catch(e){}
@@ -597,6 +598,7 @@ async function loadFromCloud(){
       data.returns=data.returns||[];
       data.moReqs=data.moReqs||[];
       data.regPayments=data.regPayments||[];
+      data.vplPayments=data.vplPayments||[];
       // Compare both orders AND payments to decide which is newer
       const localOrders=db.orders?db.orders.length:0;
       const localPayments=db.regPayments?db.regPayments.length:0;
@@ -800,9 +802,25 @@ function buildSB(){
   const rc=db.returns.filter(r=>r.status==='pending').length;
   const mc=db.moReqs.filter(r=>r.status==='pending').length;
   const lc=db.orders.filter(isLate).length;
-  const rb=rc?`<span class="nbdg">${rc}</span>`:'';
-  const mb=mc?`<span class="nbdg">${mc}</span>`:'';
-  const lb=lc?`<span class="nbdg">${lc}</span>`:'';
+  // Pending payments count
+  const approvedMOs=db.moReqs.filter(r=>r.status==='approved');
+  const paidMOIds=new Set((db.vplPayments||[]).map(p=>p.moId));
+  const pendVPL=approvedMOs.filter(r=>!paidMOIds.has(r.id)).length;
+  const pendReg=(()=>{
+    let cnt=0;
+    db.operators.forEach(op=>{
+      const regOrds=db.orders.filter(o=>o.opId===op.id&&o.orderType==='registry');
+      const totalComm=regOrds.reduce((s,o)=>s+getComm(o.price),0);
+      const paid=(db.regPayments||[]).filter(p=>p.opId===op.id).reduce((s,p)=>s+p.amount,0);
+      if(totalComm>paid)cnt++;
+    });
+    return cnt;
+  })();
+  const pp=pendVPL+pendReg;
+  const rb=rc?'<span class="nbdg">'+rc+'</span>':'';
+  const mb=mc?'<span class="nbdg">'+mc+'</span>':'';
+  const lb=lc?'<span class="nbdg">'+lc+'</span>':'';
+  const ppb=pp?'<span class="nbdg">'+pp+'</span>':'';
   document.getElementById('sidebar').innerHTML=user.role==='admin'?`
     <div class="ng">Overview</div>
     <div class="ni" data-p="dashboard"><div class="ni-ic">📊</div>Dashboard</div>
@@ -815,6 +833,7 @@ function buildSB(){
     <div class="ng">Finance</div>
     <div class="ni" data-p="mo-late"><div class="ni-ic">⚠️</div>Late MO ${lb}</div>
     <div class="ni" data-p="mo-appr"><div class="ni-ic">✅</div>MO Approval ${mb}</div>
+    <div class="ni" data-p="pending-pay"><div class="ni-ic">💸</div>Pending Payments ${ppb}</div>
     <div class="ni" data-p="commissions"><div class="ni-ic">💵</div>Commissions</div>
     <div class="ni" data-p="registry"><div class="ni-ic">📋</div>Registry / Advance</div>
     <div class="ng">Analytics</div>
@@ -846,6 +865,7 @@ function buildPages(){
     <div class="page" id="p-returns"></div><div class="page" id="p-mo-late"></div>
     <div class="page" id="p-mo-appr"></div><div class="page" id="p-commissions"></div>
     <div class="page" id="p-registry"></div>
+    <div class="page" id="p-pending-pay"></div>
     <div class="page" id="p-performance"></div><div class="page" id="p-weekly"></div><div class="page" id="p-team"></div>
   `:`
     <div class="page" id="p-op-home"></div><div class="page" id="p-op-today"></div><div class="page" id="p-op-orders"></div>
@@ -882,6 +902,7 @@ function rp(id,pg){
     case 'commissions':rComm(pg,'a');break;
     case 'performance':rPerf(pg);break;
     case 'registry':rRegistry(pg);break;
+    case 'pending-pay':rPendingPay(pg);break;
     case 'today':rToday(pg,'a');break;
     case 'weekly':rWeekly(pg);break;
     case 'team':rTeam(pg);break;
@@ -1567,6 +1588,193 @@ function changePassword(){
   }
 }
 
+function rPendingPay(pg){
+  if(!db.vplPayments)db.vplPayments=[];
+  if(!db.regPayments)db.regPayments=[];
+
+  // VPL: approved MOs where payment not sent yet
+  const approvedMOs=db.moReqs.filter(r=>r.status==='approved');
+  const paidMOIds=new Set(db.vplPayments.map(p=>p.moId));
+  const pendVPL=approvedMOs.filter(r=>!paidMOIds.has(r.id));
+  const paidVPL=approvedMOs.filter(r=>paidMOIds.has(r.id));
+
+  // Registry: operators with pending commission
+  const pendReg=[];
+  const paidReg=[];
+  db.operators.forEach(op=>{
+    const regOrds=db.orders.filter(o=>o.opId===op.id&&o.orderType==='registry');
+    if(!regOrds.length)return;
+    const totalComm=regOrds.reduce((s,o)=>s+getComm(o.price),0);
+    const paid=(db.regPayments||[]).filter(p=>p.opId===op.id).reduce((s,p)=>s+p.amount,0);
+    const baaki=Math.max(0,totalComm-paid);
+    if(baaki>0)pendReg.push({...op,totalComm,paid,baaki,regOrds});
+    else if(paid>0)paidReg.push({...op,totalComm,paid,baaki:0,regOrds});
+  });
+
+  const totalPendVPL=pendVPL.reduce((s,r)=>{const o=db.orders.find(x=>x.id===r.orderId);return s+(o?getComm(o.price):0);},0);
+  const totalPendReg=pendReg.reduce((s,o)=>s+o.baaki,0);
+  const totalPend=totalPendVPL+totalPendReg;
+
+  // Build VPL pending rows
+  let vplPendRows='';
+  pendVPL.forEach((r,i)=>{
+    const o=db.orders.find(x=>x.id===r.orderId)||{};
+    const op=db.operators.find(x=>x.id===r.opId)||{};
+    const comm=getComm(o.price||0);
+    vplPendRows+='<tr>'+
+      '<td style="padding:10px 12px;font-size:11px;color:#64748b">'+(i+1)+'</td>'+
+      '<td style="padding:10px 12px">'+opTag(r.opId)+'</td>'+
+      '<td style="padding:10px 12px"><strong style="color:#e2e8f0">'+r.patName+'</strong><div style="font-size:11px;color:#64748b">'+r.phone+'</div></td>'+
+      '<td style="padding:10px 12px;color:#34d399;font-weight:900;font-size:15px">'+Rs(comm)+'</td>'+
+      (op.bankName?'<td style="padding:10px 12px"><div style="font-size:12px;font-weight:700;color:#a78bfa">'+op.bankName+'</div><div style="font-size:12px;color:#60a5fa;font-weight:600">'+op.accNum+'</div><div style="font-size:11px;color:#64748b">'+op.accTitle+'</div></td>':'<td style="padding:10px 12px;color:#64748b;font-size:12px">Account nahi</td>')+
+      '<td style="padding:10px 12px;font-size:11px;color:#64748b">'+new Date(r.approvedAt||r.createdAt).toLocaleDateString()+'</td>'+
+      '<td style="padding:10px 12px"><button class="btn bp2 bsm" data-action="pay-vpl" data-id="'+r.id+'" style="font-size:12px">✅ Paid</button></td>'+
+    '</tr>';
+  });
+
+  // Build Registry pending rows
+  let regPendRows='';
+  pendReg.forEach((op,i)=>{
+    regPendRows+='<tr>'+
+      '<td style="padding:10px 12px;font-size:11px;color:#64748b">'+(i+1)+'</td>'+
+      '<td style="padding:10px 12px">'+opTag(op.id)+'</td>'+
+      '<td style="padding:10px 12px;color:#fbbf24;font-weight:700">'+Rs(op.totalComm)+'</td>'+
+      '<td style="padding:10px 12px;color:#34d399;font-weight:700">'+Rs(op.paid)+'</td>'+
+      '<td style="padding:10px 12px;color:#fb7185;font-weight:900;font-size:15px">'+Rs(op.baaki)+'</td>'+
+      (op.bankName?'<td style="padding:10px 12px"><div style="font-size:12px;font-weight:700;color:#a78bfa">'+op.bankName+'</div><div style="font-size:12px;color:#60a5fa;font-weight:600">'+op.accNum+'</div><div style="font-size:11px;color:#64748b">'+op.accTitle+'</div></td>':'<td style="padding:10px 12px;color:#64748b;font-size:12px">Account nahi</td>')+
+      '<td style="padding:10px 12px"><button class="btn bp2 bsm" data-action="pay-reg-op" data-id="'+op.id+'" style="font-size:12px">💸 Payment Di</button></td>'+
+    '</tr>';
+  });
+
+  // Build VPL paid rows
+  let vplPaidRows='';
+  paidVPL.forEach((r,i)=>{
+    const o=db.orders.find(x=>x.id===r.orderId)||{};
+    const pmt=db.vplPayments.find(p=>p.moId===r.id)||{};
+    const comm=getComm(o.price||0);
+    vplPaidRows+='<tr>'+
+      '<td style="padding:9px 12px;font-size:11px;color:#64748b">'+(i+1)+'</td>'+
+      '<td style="padding:9px 12px">'+opTag(r.opId)+'</td>'+
+      '<td style="padding:9px 12px"><strong style="color:#e2e8f0">'+r.patName+'</strong></td>'+
+      '<td style="padding:9px 12px;color:#34d399;font-weight:800">'+Rs(comm)+'</td>'+
+      '<td style="padding:9px 12px"><span class="bdg bd">✓ Paid</span></td>'+
+      '<td style="padding:9px 12px;font-size:11px;color:#64748b">'+(pmt.date?new Date(pmt.date).toLocaleDateString():'—')+'</td>'+
+    '</tr>';
+  });
+
+  // Build Reg paid rows
+  let regPaidRows='';
+  paidReg.forEach((op,i)=>{
+    regPaidRows+='<tr>'+
+      '<td style="padding:9px 12px;font-size:11px;color:#64748b">'+(i+1)+'</td>'+
+      '<td style="padding:9px 12px">'+opTag(op.id)+'</td>'+
+      '<td style="padding:9px 12px;color:#fbbf24;font-weight:700">'+Rs(op.totalComm)+'</td>'+
+      '<td style="padding:9px 12px;color:#34d399;font-weight:800">'+Rs(op.paid)+'</td>'+
+      '<td style="padding:9px 12px"><span class="bdg bd">✓ Paid</span></td>'+
+    '</tr>';
+  });
+
+  pg.innerHTML=`
+  <div class="ph"><div><h2>💸 Pending Payments</h2><p>Jinhe payment bheji jaani hai</p></div></div>
+
+  <div style="background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:14px;padding:20px 24px;margin-bottom:18px;position:relative;overflow:hidden">
+    <div style="position:absolute;right:-10px;top:-10px;width:120px;height:120px;background:rgba(255,255,255,.05);border-radius:50%"></div>
+    <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.9px;margin-bottom:4px">Kul Pending Payment</div>
+    <div style="font-size:34px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:8px">${Rs(totalPend)}</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">📦 VPL: <strong>${Rs(totalPendVPL)}</strong></div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">📋 Registry: <strong>${Rs(totalPendReg)}</strong></div>
+    </div>
+  </div>
+
+  ${pendVPL.length>0?`
+  <div class="card" style="margin-bottom:14px">
+    <div class="ch2"><span class="ct" style="color:#fbbf24">⏳ VPL Pending — ${pendVPL.length} Orders</span><span style="font-size:11px;color:#64748b">${Rs(totalPendVPL)} bhejna hai</span></div>
+    <div class="tw"><table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">#</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Operator</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Patient</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Commission</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Bank Details</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">MO Date</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Action</th>
+      </tr></thead>
+      <tbody>${vplPendRows}</tbody>
+    </table></div>
+  </div>`:''}
+
+  ${pendReg.length>0?`
+  <div class="card" style="margin-bottom:14px">
+    <div class="ch2"><span class="ct" style="color:#fb7185">⏳ Registry Pending — ${pendReg.length} Operators</span><span style="font-size:11px;color:#64748b">${Rs(totalPendReg)} bhejna hai</span></div>
+    <div class="tw"><table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">#</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Operator</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Banti Hai</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Di</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Baaki</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Bank Details</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Action</th>
+      </tr></thead>
+      <tbody>${regPendRows}</tbody>
+    </table></div>
+  </div>`:''}
+
+  ${pendVPL.length===0&&pendReg.length===0?`
+  <div class="card cbody"><div class="empty"><div class="empty-ic">✅</div><p>Sab payments clear hain! Koi pending nahi.</p></div></div>`:''}
+
+  ${paidVPL.length>0||paidReg.length>0?`
+  <div style="margin-top:20px">
+    <div style="font-size:12px;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span>✅</span> Paid Payments</div>
+    ${paidVPL.length>0?`
+    <div class="card" style="margin-bottom:10px">
+      <div class="ch2"><span class="ct" style="color:#34d399">✅ VPL Paid — ${paidVPL.length}</span></div>
+      <div class="tw"><table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">#</th>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Operator</th>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Patient</th>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Commission</th>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Status</th>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Paid Date</th>
+        </tr></thead>
+        <tbody>${vplPaidRows}</tbody>
+      </table></div>
+    </div>`:''}
+    ${paidReg.length>0?`
+    <div class="card">
+      <div class="ch2"><span class="ct" style="color:#34d399">✅ Registry Paid — ${paidReg.length}</span></div>
+      <div class="tw"><table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">#</th>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Operator</th>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Total Comm</th>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Paid</th>
+          <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Status</th>
+        </tr></thead>
+        <tbody>${regPaidRows}</tbody>
+      </table></div>
+    </div>`:''}
+  </div>`:''}`;
+}
+
+async function payVPL(moId){
+  if(!db.vplPayments)db.vplPayments=[];
+  const mo=db.moReqs.find(r=>r.id===moId);if(!mo)return;
+  const o=db.orders.find(x=>x.id===mo.orderId)||{};
+  const comm=getComm(o.price||0);
+  const op=db.operators.find(x=>x.id===mo.opId)||{};
+  if(!confirm('Commission: '+Rs(comm)+' — '+op.name+' ko paid mark karen?'))return;
+  db.vplPayments.push({id:Date.now(),moId,opId:mo.opId,orderId:mo.orderId,amount:comm,date:new Date().toISOString()});
+  localStorage.setItem('hzd_db',JSON.stringify(db));
+  setSS('spin');
+  await syncToCloud();
+  setSS('ok');
+  toast(op.name+' ko '+Rs(comm)+' VPL payment mark ho gayi!','✅');
+  buildSB();rc2();
+}
+
 function rRegistry(pg){
   if(!db.regPayments)db.regPayments=[];
   const regOrders=db.orders.filter(o=>o.orderType==='registry');
@@ -1958,7 +2166,12 @@ function rOpMO(pg){
 
   // Commission calculations
   const totalCommEarnable=delivered.reduce((s,o)=>s+getComm(o.price),0);
-  const commPaid=approvedMO.reduce((s,r)=>{
+  const paidMOIds=new Set((db.vplPayments||[]).map(p=>p.moId));
+  const commPaid=approvedMO.filter(r=>paidMOIds.has(r.id)).reduce((s,r)=>{
+    const o=db.orders.find(x=>x.id===r.orderId);
+    return s+(o?getComm(o.price):0);
+  },0);
+  const commApproved=approvedMO.reduce((s,r)=>{
     const o=db.orders.find(x=>x.id===r.orderId);
     return s+(o?getComm(o.price):0);
   },0);
@@ -1983,11 +2196,12 @@ function rOpMO(pg){
   let appRows='';
   approvedMO.forEach((r,i)=>{
     const o=db.orders.find(x=>x.id===r.orderId)||{};
+    const isActPaid=paidMOIds.has(r.id);
     appRows+='<tr>'+
       '<td style="padding:9px 12px;font-size:11px;color:#64748b">'+(i+1)+'</td>'+
       '<td style="padding:9px 12px"><strong style="color:#e2e8f0">'+r.patName+'</strong></td>'+
       '<td style="padding:9px 12px;color:#34d399;font-weight:800">'+Rs(getComm(o.price||0))+'</td>'+
-      '<td style="padding:9px 12px"><span class="bdg bd">✓ Paid</span></td>'+
+      '<td style="padding:9px 12px">'+(isActPaid?'<span class="bdg bd">✓ Admin ne Di</span>':'<span class="bdg bc">MO Approved — Pending</span>')+'</td>'+
       '<td style="padding:9px 12px;font-size:11px;color:#64748b">'+new Date(r.approvedAt||r.createdAt).toLocaleDateString()+'</td>'+
     '</tr>';
   });
@@ -1997,14 +2211,14 @@ function rOpMO(pg){
 
     '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px">'+
     '<div style="background:linear-gradient(135deg,#065f46,#059669);border-radius:12px;padding:16px 18px;color:#fff">'+
-    '<div style="font-size:10px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.7px">Commission Milegi</div>'+
-    '<div style="font-size:28px;font-weight:900;margin:5px 0">'+Rs(commPending)+'</div>'+
-    '<div style="font-size:12px;opacity:.8">'+pendingMO.length+' orders MO pending</div>'+
+    '<div style="font-size:10px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.7px">MO Approved (Milegi)</div>'+
+    '<div style="font-size:28px;font-weight:900;margin:5px 0">'+Rs(commApproved-commPaid)+'</div>'+
+    '<div style="font-size:12px;opacity:.8">Admin se payment aana baki</div>'+
     '</div>'+
     '<div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px 18px">'+
     '<div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.7px">Commission Mil Gayi</div>'+
     '<div style="font-size:28px;font-weight:900;color:#34d399;margin:5px 0">'+Rs(commPaid)+'</div>'+
-    '<div style="font-size:12px;color:#64748b">'+approvedMO.length+' payments approved</div>'+
+    '<div style="font-size:12px;color:#64748b">Admin ne send ki</div>'+
     '</div>'+
     '</div>'+
 
@@ -2442,6 +2656,8 @@ function handleAction(e){
     case 'edit-op':openOpM(id);break;
     case 'appr-mo':openApprModal(id);break;
     case 'pay-reg':openRegPay(id);break;
+    case 'pay-vpl':payVPL(id);break;
+    case 'pay-reg-op':openRegPay(id);break;
     case 'del-regpay':{if(!confirm('Delete payment?'))return;db.regPayments=db.regPayments.filter(x=>x.id!==id);toast('Deleted.','🗑️');save();rc2();break;}
   }
 }
