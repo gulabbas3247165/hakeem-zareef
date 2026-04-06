@@ -629,6 +629,18 @@ function getComm(p){
   if(p>=5100&&p<=6000)return 500;
   return 0;
 }
+const RETURN_PENALTY=130;
+function getNetComm(opId){
+  // Total earned commission
+  const ords=db.orders.filter(o=>o.opId===opId);
+  const earned=buildComm(ords).filter(r=>r.status==='paid').reduce((s,r)=>s+r.comm,0);
+  // Registry commissions
+  const regComm=(db.regPayments||[]).filter(p=>p.opId===opId).reduce((s,p)=>s+p.amount,0);
+  // Return penalty
+  const rets=db.returns.filter(r=>r.opId===opId).length;
+  const penalty=rets*RETURN_PENALTY;
+  return{earned,regComm,penalty,net:Math.max(0,earned+regComm-penalty)};
+}
 function commEarned(o){
   if(o.orderType==='registry')return true;
   return!!db.moReqs.find(r=>r.orderId===o.id&&r.status==='approved');
@@ -1419,37 +1431,53 @@ function toggleDayDetail(safeDate){}
 function rOpPassword(pg){
   pg.innerHTML=`
   <div class="ph"><div><h2>🔐 Password Change Karo</h2><p>Apna login password update karo</p></div></div>
-  <div class="card cbody" style="max-width:400px">
+  <div class="card cbody" style="max-width:420px">
     <div class="f" style="margin-bottom:14px">
       <label>Purana Password</label>
-      <input type="password" id="pw-old" placeholder="Purana password daalo">
+      <input type="password" id="pw-old" placeholder="Purana password daalo" autocomplete="current-password">
     </div>
     <div class="f" style="margin-bottom:14px">
       <label>Naya Password</label>
-      <input type="password" id="pw-new" placeholder="Naya password daalo">
+      <input type="password" id="pw-new" placeholder="Naya password daalo" autocomplete="new-password">
     </div>
-    <div class="f" style="margin-bottom:18px">
+    <div class="f" style="margin-bottom:20px">
       <label>Naya Password Confirm</label>
-      <input type="password" id="pw-confirm" placeholder="Dobara likho">
+      <input type="password" id="pw-confirm" placeholder="Dobara likho" autocomplete="new-password">
     </div>
-    <button class="btn bp2" style="width:100%" onclick="changePassword()">🔐 Password Change Karo</button>
+    <div id="pw-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:14px"></div>
+    <button class="btn bp2" style="width:100%" id="pw-save-btn">🔐 Password Change Karo</button>
   </div>`;
+
+  // Use event listener instead of onclick
+  document.getElementById('pw-save-btn').addEventListener('click', changePassword);
 }
 
 function changePassword(){
-  const oldPw=document.getElementById('pw-old').value;
-  const newPw=document.getElementById('pw-new').value;
-  const confirm=document.getElementById('pw-confirm').value;
-  if(!oldPw||!newPw||!confirm){toast('Sab fields bharain!','❌',true);return;}
-  if(oldPw!==user.op.password){toast('Purana password galat hai!','❌',true);return;}
-  if(newPw!==confirm){toast('Naya password match nahi karta!','❌',true);return;}
-  if(newPw.length<6){toast('Password kam az kam 6 characters ka hona chahiye!','❌',true);return;}
+  const oldPw=document.getElementById('pw-old')?.value||'';
+  const newPw=document.getElementById('pw-new')?.value||'';
+  const confirm=document.getElementById('pw-confirm')?.value||'';
+  const msg=document.getElementById('pw-msg');
+
+  function showMsg(txt,ok){
+    if(!msg)return;
+    msg.style.display='block';
+    msg.style.background=ok?'rgba(16,185,129,.12)':'rgba(225,29,72,.12)';
+    msg.style.color=ok?'#34d399':'#fb7185';
+    msg.style.border='1px solid '+(ok?'rgba(52,211,153,.3)':'rgba(251,113,133,.3)');
+    msg.textContent=txt;
+  }
+
+  if(!oldPw||!newPw||!confirm){showMsg('Sab fields bharain!',false);return;}
+  if(oldPw!==user.op.password){showMsg('Purana password galat hai!',false);return;}
+  if(newPw!==confirm){showMsg('Naya password match nahi karta!',false);return;}
+  if(newPw.length<6){showMsg('Password kam az kam 6 characters hone chahiye!',false);return;}
+
   const i=db.operators.findIndex(x=>x.id===user.op.id);
   if(i>=0){
     db.operators[i].password=newPw;
     user.op.password=newPw;
-    toast('Password change ho gaya!','✅');
     save();
+    showMsg('✅ Password successfully change ho gaya!',true);
     document.getElementById('pw-old').value='';
     document.getElementById('pw-new').value='';
     document.getElementById('pw-confirm').value='';
@@ -1683,6 +1711,29 @@ function rTeam(pg){
     </tr>`;}).join('')}</tbody></table></div></div>`;
 }
 
+function buildOpSummary(opId,ords,myC){
+  const myRets=db.returns.filter(r=>r.opId===opId).length;
+  const myVPL=ords.filter(o=>o.orderType!=='registry').length;
+  const myReg=ords.filter(o=>o.orderType==='registry').length;
+  const myDel=ords.filter(o=>o.status==='delivered').length;
+  const myMOPend=db.moReqs.filter(r=>r.opId===opId&&r.status==='pending').length;
+  const myVPLComm=myC.filter(r=>r.status==='paid').reduce((s,r)=>s+r.comm,0);
+  const myRegPaid=(db.regPayments||[]).filter(p=>p.opId===opId).reduce((s,p)=>s+p.amount,0);
+  const totalComm=myVPLComm+myRegPaid;
+  const retPenalty=myRets*RETURN_PENALTY;
+  const netComm=Math.max(0,totalComm-retPenalty);
+  return '<div style="background:#1e293b;border:1px solid #334155;border-radius:14px;padding:18px 20px;margin-bottom:16px">'+
+    '<div style="font-size:14px;font-weight:800;color:#f8fafc;margin-bottom:14px">📊 Mera Mukammal Hisab</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">'+
+    '<div style="background:#0a0f1a;padding:11px 13px;border-radius:9px;border:1px solid #334155"><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">VPL Orders</div><div style="font-size:20px;font-weight:900;color:#60a5fa;margin-top:2px">'+myVPL+'</div></div>'+
+    '<div style="background:#0a0f1a;padding:11px 13px;border-radius:9px;border:1px solid #334155"><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Registry Orders</div><div style="font-size:20px;font-weight:900;color:#a78bfa;margin-top:2px">'+myReg+'</div></div>'+
+    '<div style="background:#0a0f1a;padding:11px 13px;border-radius:9px;border:1px solid #334155"><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Parcel Mil Gaye</div><div style="font-size:20px;font-weight:900;color:#34d399;margin-top:2px">'+myDel+'</div></div>'+
+    '<div style="background:#0a0f1a;padding:11px 13px;border-radius:9px;border:1px solid '+(myMOPend>0?'rgba(251,113,133,.3)':'#334155')+'"><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">MO Pending</div><div style="font-size:20px;font-weight:900;color:'+(myMOPend>0?'#fb7185':'#34d399')+';margin-top:2px">'+myMOPend+'</div></div>'+
+    '<div style="background:#0a0f1a;padding:11px 13px;border-radius:9px;border:1px solid #334155"><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Returns</div><div style="font-size:20px;font-weight:900;color:'+(myRets>0?'#fb923c':'#34d399')+';margin-top:2px">'+myRets+'</div>'+(myRets>0?'<div style="font-size:10px;color:#fb923c;margin-top:2px">-'+Rs(retPenalty)+' penalty</div>':'')+'</div>'+
+    '<div style="background:rgba(16,185,129,.08);padding:11px 13px;border-radius:9px;border:1px solid rgba(52,211,153,.25)"><div style="font-size:9px;color:#10b981;font-weight:700;text-transform:uppercase">Net Commission</div><div style="font-size:20px;font-weight:900;color:#34d399;margin-top:2px">'+Rs(netComm)+'</div>'+(retPenalty>0?'<div style="font-size:10px;color:#fb923c;margin-top:2px">Return cut: -'+Rs(retPenalty)+'</div>':'')+'</div>'+
+    '</div></div>';
+}
+
 function rOpHome(pg){
   const op=user.op;const ords=myOrds();
   const myC=buildComm(ords);const lc=ords.filter(isLate).length;
@@ -1702,6 +1753,8 @@ function rOpHome(pg){
     <div class="sc b"><div class="sl">Advance</div><div class="sv b">${Rs(ords.reduce((s,o)=>s+o.advance,0))}</div></div>
     <div class="sc v"><div class="sl">Commission Earned</div><div class="sv v">${Rs(myC.filter(r=>r.status==='paid').reduce((s,r)=>s+r.comm,0))}</div></div>
   </div>
+
+  ${buildOpSummary(op.id,ords,myC)}
   <div class="card">
     <div class="ch2"><span class="ct">Recent Orders</span><button class="btn bp2 bsm" onclick="openOrderM()">+ New Order</button></div>
     <div class="tw"><table>
@@ -1974,9 +2027,11 @@ function saveReturn(){
     reason,refund:parseFloat(document.getElementById('rrf').value)||0,
     stockBack:document.getElementById('rsk').value,
     notes:document.getElementById('rnt').value.trim(),
-    date:document.getElementById('rdt').value,status:'pending'});
+    date:document.getElementById('rdt').value,status:'pending',
+    penalty:RETURN_PENALTY});
   const oi=db.orders.findIndex(x=>x.id===rOid);if(oi>=0)db.orders[oi].status='returned';
-  closeM('m-ret');rOid=null;save();buildSB();toast('Return processed.','↩');rc2();
+  closeM('m-ret');rOid=null;save();buildSB();
+  toast('Return process hua — Rs '+RETURN_PENALTY+' commission se cut hoga!','↩');rc2();
 }
 function resRet(id){const i=db.returns.findIndex(x=>x.id===id);if(i>=0){db.returns[i].status='resolved';toast('Resolved.','✓');save();rc2();}}
 function delRet(id){if(!confirm('Delete?'))return;db.returns=db.returns.filter(x=>x.id!==id);toast('Deleted.','🗑️');save();rc2();}
