@@ -697,11 +697,11 @@ function myOrds(){return user.role==='admin'?db.orders:db.orders.filter(o=>o.opI
 function myRets(){return user.role==='admin'?db.returns:db.returns.filter(r=>r.opId===user.op.id);}
 function Rs(n){return'Rs '+(n||0).toLocaleString();}
 function empty(n){return`<tr><td colspan="${n}"><div class="empty"><div class="empty-ic">📭</div><p>No records found.</p></div></td></tr>`;}
-function opTag(id){return`<span class="bdg" style="background:${opCl(id)}22;color:${opCl(id)};border-color:${opCl(id)}44;border:1px solid">${opNm(id)}</span>`;}
+function opTag(id){return '<span class="bdg" style="background:'+opCl(id)+'22;color:'+opCl(id)+';border-color:'+opCl(id)+'44;border:1px solid">'+opNm(id)+'</span>';}
 function sbdg(s){
   const m={pending:'bp',delivered:'bd',cancelled:'bx',returned:'brb'};
   const l={pending:'Pending',delivered:'Delivered',cancelled:'Cancelled',returned:'Returned'};
-  return`<span class="bdg ${m[s]||'bp'}">${l[s]||s}</span>`;
+  return '<span class="bdg '+(m[s]||'bp')+'">'+(l[s]||s)+'</span>';
 }
 function tyBdg(t){return t==='registry'?'<span class="bdg bv">📋 Registry</span>':'<span class="bdg bc">📦 VPL</span>';}
 function ds(d){return Math.floor((Date.now()-new Date(d))/86400000);}
@@ -715,8 +715,8 @@ function moBdg(o){
   if(!mo){
     if(o.status==='delivered'){
       const d=ds(o.deliveredAt||o.date);
-      if(d>=7)return`<span class="late-bdg">⚠ Late ${d}d</span>`;
-      return`<span class="bdg bp">Awaiting (${d}d)</span>`;
+      if(d>=7)return'<span class="late-bdg">⚠ Late '+d+'d</span>';
+      return'<span class="bdg bp">Awaiting ('+d+'d)</span>';
     }
     return'<span style="color:#475569;font-size:11px">—</span>';
   }
@@ -851,6 +851,8 @@ function buildPages(){
     <div class="page" id="p-op-home"></div><div class="page" id="p-op-today"></div><div class="page" id="p-op-orders"></div>
     <div class="page" id="p-op-patients"></div><div class="page" id="p-op-returns"></div>
     <div class="page" id="p-op-commission"></div>
+    <div class="page" id="p-op-mo"></div>
+    <div class="page" id="p-op-password"></div>
   `;
 }
 function nav(id){
@@ -912,12 +914,14 @@ function rDash(pg){
   const noOrderOps=db.operators.filter(op=>!todayOrds.find(x=>x.opId===op.id));
 
   pg.innerHTML=`
-  ${noOrderOps.length>0?`<div style="background:rgba(234,88,12,.1);border:1px solid rgba(251,146,60,.3);border-radius:11px;padding:13px 18px;margin-bottom:14px">
-    <div style="font-weight:700;color:#fb923c;font-size:13px;margin-bottom:8px">⚠️ Aaj Ke Orders Nahi Aaye — ${noOrderOps.length} Operator(s)</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px">
-      ${noOrderOps.map(op=>`<span style="background:${op.color}22;color:${op.color};border:1px solid ${op.color}44;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600">${op.name}</span>`).join('')}
-    </div>
-  </div>`:''}
+  ${(()=>{
+    if(!noOrderOps.length)return '';
+    let spans='';
+    noOrderOps.forEach(op=>{
+      spans+='<span style="background:'+op.color+'22;color:'+op.color+';border:1px solid '+op.color+'44;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600">'+op.name+'</span>';
+    });
+    return '<div style="background:rgba(234,88,12,.1);border:1px solid rgba(251,146,60,.3);border-radius:11px;padding:13px 18px;margin-bottom:14px"><div style="font-weight:700;color:#fb923c;font-size:13px;margin-bottom:8px">⚠️ Aaj Ke Orders Nahi Aaye — '+noOrderOps.length+' Operator(s)</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+spans+'</div></div>';
+  })()}
   <div class="ph"><div><h2>Dashboard</h2><p>${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div></div>
   <div style="background:linear-gradient(135deg,#065f46,#059669);border-radius:14px;padding:22px 26px;margin-bottom:18px;position:relative;overflow:hidden">
     <div style="position:absolute;right:-15px;top:-15px;width:160px;height:160px;background:rgba(255,255,255,.04);border-radius:50%"></div>
