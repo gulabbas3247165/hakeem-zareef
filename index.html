@@ -802,14 +802,15 @@ async function boot(){
     if(r){
       buildSB();
       if(cur){
-        rp(curId.replace('p-',''),cur);
-        // Restore selected date if on daily report page
-        if((curId==='p-today'||curId==='p-op-today')&&window._lastReportDate){
+        // Skip re-render on daily report pages to preserve date selection
+        if(curId==='p-today'||curId==='p-op-today'){
+          // Just update data, don't re-render page (would reset date)
           const di=document.getElementById('report-date');
-          if(di&&di.value!==window._lastReportDate){
-            di.value=window._lastReportDate;
-            loadDayReport(window._lastReportMode||'a');
+          if(di&&window._lastReportDate){
+            loadDayReport(window._lastReportMode||(curId==='p-today'?'a':'o'));
           }
+        } else {
+          rp(curId.replace('p-',''),cur);
         }
       }
     }
@@ -886,6 +887,7 @@ function buildPages(){
     <div class="page" id="p-mo-appr"></div><div class="page" id="p-commissions"></div>
     <div class="page" id="p-registry"></div>
     <div class="page" id="p-pending-pay"></div>
+    <div class="page" id="p-fines"></div>
     <div class="page" id="p-performance"></div><div class="page" id="p-weekly"></div><div class="page" id="p-team"></div>
   `:`
     <div class="page" id="p-op-home"></div><div class="page" id="p-op-today"></div><div class="page" id="p-op-orders"></div>
@@ -1545,6 +1547,8 @@ function rOpPassword(pg){
             <option value="Meezan Bank" ${op.bankName==='Meezan Bank'?'selected':''}>Meezan Bank</option>
             <option value="UBL" ${op.bankName==='UBL'?'selected':''}>UBL</option>
             <option value="MCB" ${op.bankName==='MCB'?'selected':''}>MCB</option>
+            <option value="SadaPay" ${op.bankName==='SadaPay'?'selected':''}>SadaPay</option>
+            <option value="NayaPay" ${op.bankName==='NayaPay'?'selected':''}>NayaPay</option>
             <option value="Other" ${op.bankName==='Other'?'selected':''}>Other</option>
           </select>
         </div>
@@ -2848,4 +2852,3 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script>
 </body>
 </html>
-
