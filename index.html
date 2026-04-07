@@ -2068,7 +2068,7 @@ function handleAction(e){
     case 'appr-mo':openApprModal(id);break;
     case 'pay-reg':openRegPay(id);break;
     case 'pay-vpl':payVPL(id);break;
-    case 'add-fine':openFineModal(id);break;
+    case 'add-fine':openFineModal(id||null);break;
     case 'del-fine':{if(!confirm('Delete?'))return;db.fines=db.fines.filter(x=>x.id!==id);save();rc2();toast('Deleted','🗑️');break;}
     case 'pay-reg-op':openRegPay(id);break;
     case 'del-regpay':{if(!confirm('Delete payment?'))return;db.regPayments=db.regPayments.filter(x=>x.id!==id);toast('Deleted.','🗑️');save();rc2();break;}
@@ -2255,27 +2255,20 @@ function rFines(pg){
   if(!db.fines)db.fines=[];
   const totalFines=db.fines.reduce((s,f)=>s+f.amount,0);
 
-  const byOp=db.operators.map(op=>{
+  // Build operator summary rows
+  let opRows='';
+  db.operators.forEach(op=>{
     const opFines=db.fines.filter(f=>f.opId===op.id);
     const total=opFines.reduce((s,f)=>s+f.amount,0);
-    return{...op,fines:opFines,total};
-  }).filter(x=>x.fines.length>0||true).sort((a,b)=>b.total-a.total);
-
-  let opRows='';
-  byOp.forEach(op=>{
-    const netComm=Math.max(0,(()=>{
-      const ords=db.orders.filter(o=>o.opId===op.id);
-      const comm=ords.reduce((s,o)=>s+getComm(o.price),0);
-      return comm-op.total;
-    })());
     opRows+='<tr>'+
       '<td style="padding:10px 12px">'+opTag(op.id)+'</td>'+
-      '<td style="padding:10px 12px;color:#fb7185;font-weight:800">'+Rs(op.total)+'</td>'+
-      '<td style="padding:10px 12px;font-size:12px;color:#64748b">'+op.fines.length+' jurmana</td>'+
-      '<td style="padding:10px 12px"><button class="btn bp2 bsm" data-action="add-fine" data-id="'+op.id+'">⚡ Jurmana Lagao</button></td>'+
+      '<td style="padding:10px 12px;color:#fb7185;font-weight:800">'+Rs(total)+'</td>'+
+      '<td style="padding:10px 12px;font-size:12px;color:#64748b">'+opFines.length+' jurmana</td>'+
+      '<td style="padding:10px 12px"><button class="btn bp2 bsm" data-action="add-fine" data-id="'+op.id+'">⚡ Lagao</button></td>'+
     '</tr>';
   });
 
+  // Build all fines rows
   let fineRows='';
   db.fines.slice().reverse().forEach((f,i)=>{
     fineRows+='<tr>'+
@@ -2289,45 +2282,49 @@ function rFines(pg){
     '</tr>';
   });
 
-  pg.innerHTML=`
-  <div class="ph"><div><h2>⚡ Jurmana System</h2><p>Operator discipline management</p></div>
-  <div class="pha"><button class="btn brd bsm" onclick="openFineModal(null)">⚡ Naya Jurmana</button></div></div>
+  // Build fines table section
+  let finesTable='';
+  if(db.fines.length>0){
+    finesTable='<div class="card">'+
+      '<div class="ch2"><span class="ct">Sab Jurmane ('+db.fines.length+')</span></div>'+
+      '<div class="tw"><table style="width:100%;border-collapse:collapse">'+
+      '<thead><tr>'+
+        '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">#</th>'+
+        '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Operator</th>'+
+        '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Amount</th>'+
+        '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Reason</th>'+
+        '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Note</th>'+
+        '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Date</th>'+
+        '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Del</th>'+
+      '</tr></thead>'+
+      '<tbody>'+fineRows+'</tbody>'+
+      '</table></div></div>';
+  }
 
-  <div style="background:linear-gradient(135deg,#9f1239,#e11d48);border-radius:14px;padding:20px 24px;margin-bottom:18px;position:relative;overflow:hidden">
-    <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.9px;margin-bottom:5px">Kul Jurmana Lagaya Gaya</div>
-    <div style="font-size:34px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:6px">${Rs(totalFines)}</div>
-    <div style="font-size:12px;color:rgba(255,255,255,.7)">${db.fines.length} records · Commission se automatically cut hoga</div>
-  </div>
+  pg.innerHTML=
+    '<div class="ph"><div><h2>⚡ Jurmana System</h2><p>Operator discipline management</p></div>'+
+    '<div class="pha"><button class="btn brd bsm" data-action="add-fine" data-id="0">⚡ Naya Jurmana</button></div></div>'+
 
-  <div class="card" style="margin-bottom:14px">
-    <div class="ch2"><span class="ct">Operator Jurmana Summary</span></div>
-    <div class="tw"><table style="width:100%;border-collapse:collapse">
-      <thead><tr>
-        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Operator</th>
-        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Total Jurmana</th>
-        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Count</th>
-        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Action</th>
-      </tr></thead>
-      <tbody>${opRows||'<tr><td colspan="4" style="text-align:center;padding:18px;color:#64748b">Koi jurmana nahi abhi.</td></tr>'}</tbody>
-    </table></div>
-  </div>
+    '<div style="background:linear-gradient(135deg,#9f1239,#e11d48);border-radius:14px;padding:20px 24px;margin-bottom:18px;position:relative;overflow:hidden">'+
+    '<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.9px;margin-bottom:5px">Kul Jurmana</div>'+
+    '<div style="font-size:34px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:6px">'+Rs(totalFines)+'</div>'+
+    '<div style="font-size:12px;color:rgba(255,255,255,.7)">'+db.fines.length+' records · Commission se cut hoga</div>'+
+    '</div>'+
 
-  ${db.fines.length>0?`<div class="card">
-    <div class="ch2"><span class="ct">Sab Jurmane</span></div>
-    <div class="tw"><table style="width:100%;border-collapse:collapse">
-      <thead><tr>
-        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">#</th>
-        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Operator</th>
-        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Amount</th>
-        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Reason</th>
-        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Note</th>
-        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Date</th>
-        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Del</th>
-      </tr></thead>
-      <tbody>${fineRows}</tbody>
-    </table></div>
-  </div>`:''}`;
+    '<div class="card" style="margin-bottom:14px">'+
+    '<div class="ch2"><span class="ct">Operator Summary</span></div>'+
+    '<div class="tw"><table style="width:100%;border-collapse:collapse">'+
+    '<thead><tr>'+
+      '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Operator</th>'+
+      '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Kul Jurmana</th>'+
+      '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Count</th>'+
+      '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Action</th>'+
+    '</tr></thead>'+
+    '<tbody>'+opRows+'</tbody>'+
+    '</table></div></div>'+
+    finesTable;
 }
+
 
 function openFineModal(opId){
   fineOpId=opId;
