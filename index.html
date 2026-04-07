@@ -544,12 +544,13 @@ let db=(()=>{
       parsed.moReqs=parsed.moReqs||[];
       parsed.regPayments=parsed.regPayments||[];
       parsed.vplPayments=parsed.vplPayments||[];
+      parsed.fines=parsed.fines||[];
       return parsed;
     }
   }catch(e){}
   return defaultDB();
 })();
-let user=null,eOid=null,eOpid=null,rOid=null,moOid=null,apprId=null,curOT='vpl',charts={},regPayOpId=null;
+let user=null,eOid=null,eOpid=null,rOid=null,moOid=null,apprId=null,curOT='vpl',charts={},regPayOpId=null,fineOpId=null;
 
 const FB_URL='https://hzd-crm-default-rtdb.firebaseio.com/hzd.json';
 let saveTimer=null;
@@ -599,6 +600,7 @@ async function loadFromCloud(){
       data.moReqs=data.moReqs||[];
       data.regPayments=data.regPayments||[];
       data.vplPayments=data.vplPayments||[];
+      data.fines=data.fines||[];
       // Compare both orders AND payments to decide which is newer
       const localOrders=db.orders?db.orders.length:0;
       const localPayments=db.regPayments?db.regPayments.length:0;
@@ -793,14 +795,22 @@ async function boot(){
   setInterval(async()=>{
     if(!user||saveTimer)return;
     const cur=document.querySelector('.page.on');
-    // Don't refresh on settings page - would reset form fields
-    if(cur&&cur.id==='p-op-password')return;
+    const curId=cur?cur.id:'';
+    // Don't refresh on settings page
+    if(curId==='p-op-password')return;
     const r=await loadFromCloud();
     if(r){
       buildSB();
-      // Don't re-render if user might be typing
-      if(cur&&cur.id!=='p-op-password'){
-        rp(cur.id.replace('p-',''),cur);
+      if(cur){
+        rp(curId.replace('p-',''),cur);
+        // Restore selected date if on daily report page
+        if((curId==='p-today'||curId==='p-op-today')&&window._lastReportDate){
+          const di=document.getElementById('report-date');
+          if(di&&di.value!==window._lastReportDate){
+            di.value=window._lastReportDate;
+            loadDayReport(window._lastReportMode||'a');
+          }
+        }
       }
     }
   },8000);
@@ -849,6 +859,7 @@ function buildSB(){
     <div class="ni" data-p="performance"><div class="ni-ic">🏆</div>Performance</div>
     <div class="ni" data-p="weekly"><div class="ni-ic">📈</div>Weekly Report</div>
     <div class="ng">Settings</div>
+    <div class="ni" data-p="fines"><div class="ni-ic">⚡</div>Jurmana System</div>
     <div class="ni" data-p="team"><div class="ni-ic">⚙️</div>Team Members</div>
   `:`
     <div class="ng">Menu</div>
@@ -914,6 +925,7 @@ function rp(id,pg){
     case 'pending-pay':rPendingPay(pg);break;
     case 'today':rToday(pg,'a');break;
     case 'weekly':rWeekly(pg);break;
+    case 'fines':rFines(pg);break;
     case 'team':rTeam(pg);break;
     case 'op-home':rOpHome(pg);break;
     case 'op-orders':rOpOrds(pg);break;
@@ -1348,6 +1360,10 @@ function loadDayReport(m){
   if(!dateInput)return;
   const selectedDate=dateInput.value;
   if(!selectedDate)return;
+  // Store selected date so refresh doesn't reset it
+  window._lastReportDate=selectedDate;
+  window._lastReportMode=m;
+  if(!selectedDate)return;
 
   const allOrds=isA?db.orders:db.orders.filter(o=>o.opId===user.op.id);
   const dayOrds=allOrds.filter(o=>o.date&&o.date.slice(0,10)===selectedDate);
@@ -1649,7 +1665,8 @@ function buildOpSummary(opId,ords,myC){
   const myRegPaid=(db.regPayments||[]).filter(p=>p.opId===opId).reduce((s,p)=>s+p.amount,0);
   const totalComm=myVPLComm+myRegPaid;
   const retPenalty=myRets*RETURN_PENALTY;
-  const netComm=Math.max(0,totalComm-retPenalty);
+  const myFines=(db.fines||[]).filter(f=>f.opId===opId).reduce((s,f)=>s+f.amount,0);
+  const netComm=Math.max(0,totalComm-retPenalty-myFines);
   return '<div style="background:#1e293b;border:1px solid #334155;border-radius:14px;padding:18px 20px;margin-bottom:16px">'+
     '<div style="font-size:14px;font-weight:800;color:#f8fafc;margin-bottom:14px">📊 Mera Mukammal Hisab</div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">'+
@@ -1658,7 +1675,7 @@ function buildOpSummary(opId,ords,myC){
     '<div style="background:#0a0f1a;padding:11px 13px;border-radius:9px;border:1px solid #334155"><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Parcel Mil Gaye</div><div style="font-size:20px;font-weight:900;color:#34d399;margin-top:2px">'+myDel+'</div></div>'+
     '<div style="background:#0a0f1a;padding:11px 13px;border-radius:9px;border:1px solid '+(myMOPend>0?'rgba(251,113,133,.3)':'#334155')+'"><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">MO Pending</div><div style="font-size:20px;font-weight:900;color:'+(myMOPend>0?'#fb7185':'#34d399')+';margin-top:2px">'+myMOPend+'</div></div>'+
     '<div style="background:#0a0f1a;padding:11px 13px;border-radius:9px;border:1px solid #334155"><div style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase">Returns</div><div style="font-size:20px;font-weight:900;color:'+(myRets>0?'#fb923c':'#34d399')+';margin-top:2px">'+myRets+'</div>'+(myRets>0?'<div style="font-size:10px;color:#fb923c;margin-top:2px">-'+Rs(retPenalty)+' penalty</div>':'')+'</div>'+
-    '<div style="background:rgba(16,185,129,.08);padding:11px 13px;border-radius:9px;border:1px solid rgba(52,211,153,.25)"><div style="font-size:9px;color:#10b981;font-weight:700;text-transform:uppercase">Net Commission</div><div style="font-size:20px;font-weight:900;color:#34d399;margin-top:2px">'+Rs(netComm)+'</div>'+(retPenalty>0?'<div style="font-size:10px;color:#fb923c;margin-top:2px">Return cut: -'+Rs(retPenalty)+'</div>':'')+'</div>'+
+    '<div style="background:rgba(16,185,129,.08);padding:11px 13px;border-radius:9px;border:1px solid rgba(52,211,153,.25)"><div style="font-size:9px;color:#10b981;font-weight:700;text-transform:uppercase">Net Commission</div><div style="font-size:20px;font-weight:900;color:#34d399;margin-top:2px">'+Rs(netComm)+'</div>'+(retPenalty>0?'<div style="font-size:10px;color:#fb923c;margin-top:2px">Return: -'+Rs(retPenalty)+'</div>':'')+(myFines>0?'<div style="font-size:10px;color:#fb7185;margin-top:1px">Jurmana: -'+Rs(myFines)+'</div>':'')+'</div>'+
     '</div></div>';
 }
 
@@ -2048,6 +2065,8 @@ function handleAction(e){
     case 'appr-mo':openApprModal(id);break;
     case 'pay-reg':openRegPay(id);break;
     case 'pay-vpl':payVPL(id);break;
+    case 'add-fine':openFineModal(id);break;
+    case 'del-fine':{if(!confirm('Delete?'))return;db.fines=db.fines.filter(x=>x.id!==id);save();rc2();toast('Deleted','🗑️');break;}
     case 'pay-reg-op':openRegPay(id);break;
     case 'del-regpay':{if(!confirm('Delete payment?'))return;db.regPayments=db.regPayments.filter(x=>x.id!==id);toast('Deleted.','🗑️');save();rc2();break;}
   }
@@ -2227,6 +2246,181 @@ function rRegistry(pg){
     </div>
   </div>
   ${opHTML||'<div class="card cbody"><div class="empty"><div class="empty-ic">📋</div><p>Koi registry order nahi.</p></div></div>'}`;
+}
+
+function rFines(pg){
+  if(!db.fines)db.fines=[];
+  const totalFines=db.fines.reduce((s,f)=>s+f.amount,0);
+
+  const byOp=db.operators.map(op=>{
+    const opFines=db.fines.filter(f=>f.opId===op.id);
+    const total=opFines.reduce((s,f)=>s+f.amount,0);
+    return{...op,fines:opFines,total};
+  }).filter(x=>x.fines.length>0||true).sort((a,b)=>b.total-a.total);
+
+  let opRows='';
+  byOp.forEach(op=>{
+    const netComm=Math.max(0,(()=>{
+      const ords=db.orders.filter(o=>o.opId===op.id);
+      const comm=ords.reduce((s,o)=>s+getComm(o.price),0);
+      return comm-op.total;
+    })());
+    opRows+='<tr>'+
+      '<td style="padding:10px 12px">'+opTag(op.id)+'</td>'+
+      '<td style="padding:10px 12px;color:#fb7185;font-weight:800">'+Rs(op.total)+'</td>'+
+      '<td style="padding:10px 12px;font-size:12px;color:#64748b">'+op.fines.length+' jurmana</td>'+
+      '<td style="padding:10px 12px"><button class="btn bp2 bsm" data-action="add-fine" data-id="'+op.id+'">⚡ Jurmana Lagao</button></td>'+
+    '</tr>';
+  });
+
+  let fineRows='';
+  db.fines.slice().reverse().forEach((f,i)=>{
+    fineRows+='<tr>'+
+      '<td style="padding:9px 12px;font-size:11px;color:#64748b">'+(i+1)+'</td>'+
+      '<td style="padding:9px 12px">'+opTag(f.opId)+'</td>'+
+      '<td style="padding:9px 12px;color:#fb7185;font-weight:800">'+Rs(f.amount)+'</td>'+
+      '<td style="padding:9px 12px;font-size:12px;color:#e2e8f0">'+f.reason+'</td>'+
+      '<td style="padding:9px 12px;font-size:12px;color:#94a3b8">'+(f.note||'—')+'</td>'+
+      '<td style="padding:9px 12px;font-size:11px;color:#64748b">'+new Date(f.date).toLocaleDateString()+'</td>'+
+      '<td style="padding:9px 12px"><button class="btn bxs brd" data-action="del-fine" data-id="'+f.id+'">🗑</button></td>'+
+    '</tr>';
+  });
+
+  pg.innerHTML=`
+  <div class="ph"><div><h2>⚡ Jurmana System</h2><p>Operator discipline management</p></div>
+  <div class="pha"><button class="btn brd bsm" onclick="openFineModal(null)">⚡ Naya Jurmana</button></div></div>
+
+  <div style="background:linear-gradient(135deg,#9f1239,#e11d48);border-radius:14px;padding:20px 24px;margin-bottom:18px;position:relative;overflow:hidden">
+    <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.9px;margin-bottom:5px">Kul Jurmana Lagaya Gaya</div>
+    <div style="font-size:34px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:6px">${Rs(totalFines)}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.7)">${db.fines.length} records · Commission se automatically cut hoga</div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="ch2"><span class="ct">Operator Jurmana Summary</span></div>
+    <div class="tw"><table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Operator</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Total Jurmana</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Count</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Action</th>
+      </tr></thead>
+      <tbody>${opRows||'<tr><td colspan="4" style="text-align:center;padding:18px;color:#64748b">Koi jurmana nahi abhi.</td></tr>'}</tbody>
+    </table></div>
+  </div>
+
+  ${db.fines.length>0?`<div class="card">
+    <div class="ch2"><span class="ct">Sab Jurmane</span></div>
+    <div class="tw"><table style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">#</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Operator</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Amount</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Reason</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Note</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Date</th>
+        <th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Del</th>
+      </tr></thead>
+      <tbody>${fineRows}</tbody>
+    </table></div>
+  </div>`:''}`;
+}
+
+function openFineModal(opId){
+  fineOpId=opId;
+  const sel=document.getElementById('fine-info');
+  if(sel){
+    if(opId){
+      const op=db.operators.find(x=>x.id===opId)||{};
+      const total=(db.fines||[]).filter(f=>f.opId===opId).reduce((s,f)=>s+f.amount,0);
+      sel.innerHTML='<div style="display:flex;align-items:center;gap:10px">'+
+        '<div style="width:34px;height:34px;border-radius:8px;background:'+op.color+';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800">'+op.name.slice(0,2)+'</div>'+
+        '<div><div style="font-weight:700;color:#e2e8f0">'+op.name+'</div>'+
+        '<div style="font-size:12px;color:#fb7185;margin-top:2px">Pichle jurmane: '+Rs(total)+'</div></div></div>';
+    } else {
+      // Show operator selector
+      sel.innerHTML='<div class="f"><label>Operator Select Karo</label>'+
+        '<select id="fine-op-sel" style="padding:10px 12px;border:1.5px solid #334155;border-radius:8px;font-size:13px;font-family:Inter,sans-serif;background:#0a0f1a;color:#e2e8f0;outline:none;width:100%">'+
+        '<option value="">Select karo</option>'+
+        db.operators.map(o=>'<option value="'+o.id+'">'+o.name+'</option>').join('')+
+        '</select></div>';
+    }
+  }
+  const amtEl=document.getElementById('fine-amt');
+  const dateEl=document.getElementById('fine-date');
+  const reasonEl=document.getElementById('fine-reason');
+  const noteEl=document.getElementById('fine-note');
+  if(amtEl)amtEl.value='';
+  if(dateEl)dateEl.value=new Date().toISOString().slice(0,10);
+  if(reasonEl)reasonEl.value='';
+  if(noteEl)noteEl.value='';
+  openM('m-fine');
+}
+
+async function saveFine(){
+  const amt=parseFloat(document.getElementById('fine-amt')?.value)||0;
+  const reason=document.getElementById('fine-reason')?.value||'';
+  if(!amt){toast('Amount daalo!','❌',true);return;}
+  if(!reason){toast('Reason select karo!','❌',true);return;}
+
+  // Get opId
+  let opId=fineOpId;
+  if(!opId){
+    const sel=document.getElementById('fine-op-sel');
+    opId=sel?parseInt(sel.value):null;
+  }
+  if(!opId){toast('Operator select karo!','❌',true);return;}
+
+  if(!db.fines)db.fines=[];
+  const op=db.operators.find(x=>x.id===opId)||{};
+  db.fines.push({
+    id:Date.now(),opId,amount:amt,reason,
+    note:document.getElementById('fine-note')?.value.trim()||'',
+    date:document.getElementById('fine-date')?.value||new Date().toISOString().slice(0,10)
+  });
+  localStorage.setItem('hzd_db',JSON.stringify(db));
+  closeM('m-fine');fineOpId=null;
+  setSS('spin');await syncToCloud();setSS('ok');
+  toast(op.name+' ko Rs '+amt+' jurmana laga diya!','⚡');
+  buildSB();rc2();
+}
+
+function exportDayReport(){
+  const dateInput=document.getElementById('report-date');
+  if(!dateInput)return;
+  const selectedDate=dateInput.value;
+  if(!selectedDate){toast('Pehle date select karo!','❌',true);return;}
+  const dayOrds=db.orders.filter(o=>o.date&&o.date.slice(0,10)===selectedDate);
+  const dateLabel=new Date(selectedDate+'T00:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const rows=[
+    ['HAKEEM ZAREEF DAWAKHANA — Daily Report'],
+    ['Date: '+dateLabel],
+    [''],
+    ['Operator','VPL Orders','Registry Orders','Total Orders','Total Advance (Rs)','Commission (Rs)','Returns']
+  ];
+  db.operators.forEach(op=>{
+    const opO=dayOrds.filter(x=>x.opId===op.id);
+    const opR=db.returns.filter(x=>x.opId===op.id&&x.date===selectedDate).length;
+    if(opO.length===0&&opR===0)return;
+    rows.push([
+      op.name,
+      opO.filter(x=>x.orderType!=='registry').length,
+      opO.filter(x=>x.orderType==='registry').length,
+      opO.length,
+      opO.reduce((s,x)=>s+x.advance,0),
+      opO.reduce((s,x)=>s+getComm(x.price),0),
+      opR
+    ]);
+  });
+  rows.push(['']);
+  rows.push(['TOTAL','',''
+    ,dayOrds.length
+    ,dayOrds.reduce((s,x)=>s+x.advance,0)
+    ,dayOrds.reduce((s,x)=>s+getComm(x.price),0)
+    ,db.returns.filter(x=>x.date===selectedDate).length
+  ]);
+  dlCSV(rows,'daily_report_'+selectedDate+'.csv');
+  toast('Report download ho rahi hai!','⬇');
 }
 
 async function doChangePassword(){
@@ -2637,6 +2831,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   tap(document.getElementById('cls-regpay'),()=>closeM('m-regpay'));
   tap(document.getElementById('cancel-regpay'),()=>closeM('m-regpay'));
   tap(document.getElementById('save-regpay-btn'),()=>saveRegPay());
+  tap(document.getElementById('cls-fine'),()=>closeM('m-fine'));
+  tap(document.getElementById('cancel-fine'),()=>closeM('m-fine'));
+  tap(document.getElementById('save-fine-btn'),()=>saveFine());
   tap(document.getElementById('copy-sync-btn'),copySync);
   tap(document.getElementById('apply-sync-btn'),applySync);
 
