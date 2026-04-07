@@ -492,6 +492,36 @@ tr:hover td{background:rgba(255,255,255,.02);}
 </div>
 </div>
 
+<!-- JURMANA MODAL -->
+<div class="ov" id="m-fine">
+<div class="modal">
+  <div class="mh"><h3>⚡ Jurmana Lagao</h3><button class="mcl" id="cls-fine">✕</button></div>
+  <div class="mb">
+    <div id="fine-info" style="background:rgba(225,29,72,.08);border:1px solid rgba(251,113,133,.25);border-radius:9px;padding:12px 14px;margin-bottom:13px"></div>
+    <div class="fg">
+      <div class="f"><label>Amount (Rs) *</label><input type="number" id="fine-amt" placeholder="e.g. 200" inputmode="numeric"></div>
+      <div class="f"><label>Date</label><input type="date" id="fine-date"></div>
+      <div class="f full"><label>Reason *</label>
+        <select id="fine-reason">
+          <option value="">Select karo</option>
+          <option>Ignore kiya group message</option>
+          <option>Orders nahi diye</option>
+          <option>Late response</option>
+          <option>Wrong information di</option>
+          <option>Customer se badtameezi</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="f full"><label>Note</label><input id="fine-note" placeholder="Extra detail..."></div>
+    </div>
+  </div>
+  <div class="mft">
+    <button class="btn bgh bsm" id="cancel-fine">Cancel</button>
+    <button class="btn brd bsm" id="save-fine-btn">⚡ Jurmana Lagao</button>
+  </div>
+</div>
+</div>
+
 <!-- REG PAYMENT MODAL -->
 <div class="ov" id="m-regpay">
 <div class="modal">
@@ -2259,16 +2289,22 @@ function rFines(pg){
   if(!db.fines)db.fines=[];
   const totalFines=db.fines.reduce((s,f)=>s+f.amount,0);
 
-  // Build operator summary rows
+  // Build operator summary rows with order stats
   let opRows='';
   db.operators.forEach(op=>{
     const opFines=db.fines.filter(f=>f.opId===op.id);
-    const total=opFines.reduce((s,f)=>s+f.amount,0);
+    const fineTotal=opFines.reduce((s,f)=>s+f.amount,0);
+    const ords=db.orders.filter(o=>o.opId===op.id);
+    const vpl=ords.filter(o=>o.orderType!=='registry').length;
+    const reg=ords.filter(o=>o.orderType==='registry').length;
     opRows+='<tr>'+
       '<td style="padding:10px 12px">'+opTag(op.id)+'</td>'+
-      '<td style="padding:10px 12px;color:#fb7185;font-weight:800">'+Rs(total)+'</td>'+
-      '<td style="padding:10px 12px;font-size:12px;color:#64748b">'+opFines.length+' jurmana</td>'+
-      '<td style="padding:10px 12px"><button class="btn bp2 bsm" data-action="add-fine" data-id="'+op.id+'">⚡ Lagao</button></td>'+
+      '<td style="padding:10px 12px;text-align:center;font-weight:800;color:#e2e8f0">'+ords.length+'</td>'+
+      '<td style="padding:10px 12px;text-align:center;color:#60a5fa;font-weight:700">'+vpl+'</td>'+
+      '<td style="padding:10px 12px;text-align:center;color:#a78bfa;font-weight:700">'+reg+'</td>'+
+      '<td style="padding:10px 12px;color:#fb7185;font-weight:800">'+(fineTotal>0?Rs(fineTotal):'—')+'</td>'+
+      '<td style="padding:10px 12px;font-size:12px;color:#64748b">'+opFines.length+'</td>'+
+      '<td style="padding:10px 12px"><button class="btn brd bxs" data-action="add-fine" data-id="'+op.id+'">⚡</button></td>'+
     '</tr>';
   });
 
@@ -2320,7 +2356,10 @@ function rFines(pg){
     '<div class="tw"><table style="width:100%;border-collapse:collapse">'+
     '<thead><tr>'+
       '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Operator</th>'+
-      '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Kul Jurmana</th>'+
+      '<th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Total</th>'+
+      '<th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">VPL</th>'+
+      '<th style="text-align:center;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Registry</th>'+
+      '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Jurmana</th>'+
       '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Count</th>'+
       '<th style="text-align:left;padding:8px 12px;font-size:10px;font-weight:700;color:#64748b;background:#0a0f1a;border-bottom:1px solid #334155">Action</th>'+
     '</tr></thead>'+
@@ -2331,7 +2370,11 @@ function rFines(pg){
 
 
 function openFineModal(opId){
+  // Convert 0 to null (from data-id="0")
+  if(opId===0)opId=null;
   fineOpId=opId;
+  const modal=document.getElementById('m-fine');
+  if(!modal){toast('Page refresh karo!','❌',true);return;}
   const sel=document.getElementById('fine-info');
   if(sel){
     if(opId){
